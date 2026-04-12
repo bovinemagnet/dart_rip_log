@@ -1,0 +1,54 @@
+X Lossless Decoder version 20230916 (153.8)
+
+XLD extraction logfile from 2026-03-15 12:34:56 +0900
+
+Used drive        : PIONEER BD-RW BDR-212V (revision 1.04)
+Media type        : Pressed CD
+Ripper mode       : CDParanoia III 10.2
+Disable audio cache : Auto (Enabled)
+Make use of C2 pointers : No
+Read offset correction  : 6
+Max retry count         : 100
+Gap status              : Analyzed, Appended to previous track
+
+TOC of the extracted CD
+     Track |   Start  |  Length  | Start sector | End sector
+    ---------+----------+----------+--------------+-----------
+        1 | 00:00:00 | 03:14:52 |            0 |    14626
+        2 | 03:14:52 | 04:01:73 |        14627 |    32774
+
+Track 01
+Filename : /Music/TestAlbum/01 - Track One.flac
+Pre-gap length : 00:02:00
+
+CRC32 hash               : 882B01BE
+AccurateRip v1 signature : F4E2268A
+AccurateRip v2 signature : A1B2C3D4
+->Accurately ripped (v1+v2, confidence 3/3)
+Statistics
+ Read error                           : 0
+ Jitter error (maybe fixed)           : 0
+ Retry sector count                   : 0
+ Damaged sector count                 : 0
+ Peak level                           : 96.2 %
+ Track quality                        : 100.0 %
+
+Track 02
+Filename : /Music/TestAlbum/02 - Track Two.flac
+Pre-gap length : 00:00:00
+
+CRC32 hash               default : AABBCCDD
+AccurateRip v1 signature : F1F2F3F4
+AccurateRip v2 signature : 0A0B0C0D
+->NOT verified as accurate (total 3 results)
+Statistics
+ Read error                           : 2
+ Jitter error (maybe fixed)           : 1
+ Retry sector count                   : 0
+ Damaged sector count                 : 0
+ Peak level                           : 75.3 %
+ Track quality                        : 98.5 %
+
+No errors occurred
+
+End of status report

@@ -1,0 +1,14 @@
+name: dart_rip_log
+description: >
+  A pure Dart library that parses rip log files from all major CD ripping tools
+  (EAC, XLD) into structured quality data. Zero dependencies beyond the Dart SDK.
+version: 0.0.1
+homepage: https://github.com/bovinemagnet/dart_rip_log
+repository: https://github.com/bovinemagnet/dart_rip_log
+
+environment:
+  sdk: '>=3.5.0 <4.0.0'
+
+dev_dependencies:
+  lints: ^4.0.0
+  test: ^1.25.0
