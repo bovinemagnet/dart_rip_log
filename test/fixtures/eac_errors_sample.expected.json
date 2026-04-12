@@ -1,0 +1,67 @@
+{
+  "logFormat": "eac",
+  "toolVersion": "V1.6",
+  "extractionDate": "2026-01-05T00:00:00.000",
+  "drive": {
+    "name": "ASUS BW-16D1HT   Adapter: 1   ID: 0",
+    "readOffset": 6
+  },
+  "readMode": "Secure",
+  "readOffset": 6,
+  "overread": false,
+  "gapHandling": "Appended to previous track",
+  "tracks": [
+    {
+      "trackNumber": 1,
+      "filename": "C:\\Music\\Scratched\\01 - Clean.flac",
+      "peakLevel": 0.92,
+      "trackQuality": 0.9990000000000001,
+      "copyCrc": "11112222",
+      "testCrc": "11112222",
+      "accurateRipStatus": "verified",
+      "accurateRipCrcV1": "AABBCCDD",
+      "accurateRipConfidence": 2,
+      "copyOk": true,
+      "errors": {
+        "readErrors": 0,
+        "skipErrors": 0,
+        "jitterErrors": 0,
+        "edgeJitterErrors": 0,
+        "atomJitterErrors": 0,
+        "driftErrors": 0,
+        "droppedBytes": 0,
+        "duplicatedBytes": 0,
+        "inconsistentErrorSectors": 0,
+        "damagedSectors": 0,
+        "hasErrors": false
+      },
+      "logFormat": "eac"
+    },
+    {
+      "trackNumber": 2,
+      "filename": "C:\\Music\\Scratched\\02 - Damaged.flac",
+      "peakLevel": 0.884,
+      "trackQuality": 0.721,
+      "copyCrc": "DEADBEEF",
+      "accurateRipStatus": "mismatch",
+      "accurateRipCrcV1": "EEEEEEEE",
+      "copyOk": true,
+      "errors": {
+        "readErrors": 3,
+        "skipErrors": 1,
+        "jitterErrors": 0,
+        "edgeJitterErrors": 2,
+        "atomJitterErrors": 4,
+        "driftErrors": 1,
+        "droppedBytes": 5,
+        "duplicatedBytes": 2,
+        "inconsistentErrorSectors": 1,
+        "damagedSectors": 0,
+        "hasErrors": true
+      },
+      "logFormat": "eac"
+    }
+  ],
+  "integrityHash": "0011223344556677889900AABBCCDDEEFF",
+  "errors": []
+}

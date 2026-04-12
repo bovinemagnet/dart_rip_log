@@ -1,0 +1,41 @@
+{
+  "logFormat": "eac",
+  "toolVersion": "V1.6",
+  "extractionDate": "2026-02-20T00:00:00.000",
+  "drive": {
+    "name": "ASUS BW-16D1HT   Adapter: 1   ID: 0",
+    "readOffset": 6
+  },
+  "readMode": "Secure",
+  "readOffset": 6,
+  "overread": false,
+  "gapHandling": "Not detected, thus appended to previous track",
+  "tracks": [
+    {
+      "trackNumber": 1,
+      "filename": "C:\\Music\\LiveShow\\full_disc.flac",
+      "peakLevel": 0.987,
+      "trackQuality": 0.9990000000000001,
+      "copyCrc": "0A1B2C3D",
+      "testCrc": "0A1B2C3D",
+      "accurateRipStatus": "notChecked",
+      "copyOk": true,
+      "errors": {
+        "readErrors": 0,
+        "skipErrors": 0,
+        "jitterErrors": 0,
+        "edgeJitterErrors": 0,
+        "atomJitterErrors": 0,
+        "driftErrors": 0,
+        "droppedBytes": 0,
+        "duplicatedBytes": 0,
+        "inconsistentErrorSectors": 0,
+        "damagedSectors": 0,
+        "hasErrors": false
+      },
+      "logFormat": "eac"
+    }
+  ],
+  "integrityHash": "99887766554433221100FFEEDDCCBBAA",
+  "errors": []
+}

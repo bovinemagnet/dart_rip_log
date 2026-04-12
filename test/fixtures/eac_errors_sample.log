@@ -1,0 +1,49 @@
+Exact Audio Copy V1.6 from 23. October 2019
+
+EAC extraction logfile from 5. January 2026
+
+Artist / Title / Year : Test Artist / Scratched Disc / 2024
+Used drive            : ASUS BW-16D1HT   Adapter: 1   ID: 0
+
+Read mode             : Secure
+Read offset correction                      : 6
+Overread into Lead-In and Lead-Out          : No
+Gap handling                                : Appended to previous track
+
+
+Track  1
+
+     Filename C:\Music\Scratched\01 - Clean.flac
+
+     Peak level 92.0 %
+     Track quality 99.9 %
+     Test CRC 11112222
+     Copy CRC 11112222
+     Accurately ripped (confidence 2)  [AABBCCDD]
+     Copy OK
+
+
+Track  2
+
+     Filename C:\Music\Scratched\02 - Damaged.flac
+
+     Peak level 88.4 %
+     Track quality 72.1 %
+     Copy CRC DEADBEEF
+     Read error                               : 3
+     Skip error                               : 1
+     Edge jitter error (maybe fixed)          : 2
+     Atom jitter error (maybe fixed)          : 4
+     Drift error (maybe fixed)                : 1
+     Dropped bytes error (maybe fixed)        : 5
+     Duplicated bytes error (maybe fixed)     : 2
+     Inconsistency in error sectors           : 1
+     Cannot be verified as accurate  [EEEEEEEE]
+     Copy OK
+
+
+There were errors
+
+End of status report
+
+==== Log checksum 0011223344556677889900AABBCCDDEEFF ====

@@ -1,0 +1,31 @@
+Exact Audio Copy V1.6 from 23. October 2019
+
+EAC extraction logfile from 20. February 2026
+
+Artist / Title / Year : Test Artist / Live Show / 2024
+Used drive            : ASUS BW-16D1HT   Adapter: 1   ID: 0
+
+Read mode             : Secure
+Read offset correction                      : 6
+Overread into Lead-In and Lead-Out          : No
+Gap handling                                : Not detected, thus appended to previous track
+
+
+Range status and errors
+
+Selected range
+
+     Filename C:\Music\LiveShow\full_disc.flac
+
+     Peak level 98.7 %
+     Range quality 99.9 %
+     Test CRC 0A1B2C3D
+     Copy CRC 0A1B2C3D
+     Copy OK
+
+
+No errors occurred
+
+End of status report
+
+==== Log checksum 99887766554433221100FFEEDDCCBBAA ====

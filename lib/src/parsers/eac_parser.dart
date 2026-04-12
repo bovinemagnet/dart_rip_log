@@ -35,18 +35,21 @@ final _reIntegrityHash =
 // ---------------------------------------------------------------------------
 
 final _reTrackHeader = RegExp(r'^Track\s+(\d+)\s*$', caseSensitive: false);
+final _reRangeHeader =
+    RegExp(r'^Range status and errors\s*$', caseSensitive: false);
 final _reFilename = RegExp(r'Filename\s+(.+)', caseSensitive: false);
 final _rePeakLevel =
     RegExp(r'Peak level\s+([\d.]+)\s*%', caseSensitive: false);
 final _reTrackQuality =
-    RegExp(r'Track quality\s+([\d.]+)\s*%', caseSensitive: false);
+    RegExp(r'(?:Track|Range) quality\s+([\d.]+)\s*%', caseSensitive: false);
 final _reTestCrc = RegExp(r'Test CRC\s+([0-9A-Fa-f]+)', caseSensitive: false);
 final _reCopyCrc = RegExp(r'Copy CRC\s+([0-9A-Fa-f]+)', caseSensitive: false);
 final _reCopyOk = RegExp(r'Copy OK', caseSensitive: false);
 
 // AccurateRip status lines
 final _reArVerified = RegExp(
-    r'Accurately ripped \(confidence\s+(\d+)\)\s+\[([0-9A-Fa-f]+)\]',
+    r'Accurately ripped \(confidence\s+(\d+)\)\s+\[([0-9A-Fa-f]+)\]'
+    r'(?:.*?\(AR v2 signature:\s*([0-9A-Fa-f]+)\))?',
     caseSensitive: false);
 final _reArCannot = RegExp(
     r'Cannot be verified as accurate\s+\[([0-9A-Fa-f]+)\]',
@@ -94,10 +97,17 @@ RipLog parseEac(String content) {
   List<String>? currentTrack;
   final headerLines = <String>[];
   bool inTrackArea = false;
+  bool isRangeRip = false;
 
   for (final line in lines) {
-    if (_reTrackHeader.hasMatch(line.trim())) {
+    final trimmed = line.trim();
+    if (_reTrackHeader.hasMatch(trimmed)) {
       inTrackArea = true;
+      if (currentTrack != null) trackSections.add(currentTrack);
+      currentTrack = [line];
+    } else if (_reRangeHeader.hasMatch(trimmed)) {
+      inTrackArea = true;
+      isRangeRip = true;
       if (currentTrack != null) trackSections.add(currentTrack);
       currentTrack = [line];
     } else if (inTrackArea) {
@@ -187,7 +197,8 @@ RipLog parseEac(String content) {
   // ---- Parse tracks ----
   final tracks = <RipLogTrack>[];
   for (final section in trackSections) {
-    final track = _parseTrackSection(section, parsingErrors);
+    final track = _parseTrackSection(section, parsingErrors,
+        isRange: isRangeRip);
     if (track != null) tracks.add(track);
   }
 
@@ -234,8 +245,9 @@ RipLog parseEac(String content) {
 // ---------------------------------------------------------------------------
 
 RipLogTrack? _parseTrackSection(
-    List<String> lines, List<String> parsingErrors) {
-  int? trackNumber;
+    List<String> lines, List<String> parsingErrors,
+    {bool isRange = false}) {
+  int? trackNumber = isRange ? 1 : null;
   String? filename;
   double? peakLevel;
   double? trackQuality;
@@ -243,6 +255,7 @@ RipLogTrack? _parseTrackSection(
   String? copyCrc;
   AccurateRipStatus arStatus = AccurateRipStatus.notChecked;
   String? arCrcV1;
+  String? arCrcV2;
   int? arConfidence;
   bool copyOk = false;
 
@@ -318,6 +331,7 @@ RipLogTrack? _parseTrackSection(
       arStatus = AccurateRipStatus.verified;
       arConfidence = int.tryParse(mArVerified.group(1)!);
       arCrcV1 = mArVerified.group(2)?.toUpperCase();
+      arCrcV2 = mArVerified.group(3)?.toUpperCase();
       continue;
     }
 
@@ -392,6 +406,7 @@ RipLogTrack? _parseTrackSection(
     testCrc: testCrc,
     accurateRipStatus: arStatus,
     accurateRipCrcV1: arCrcV1,
+    accurateRipCrcV2: arCrcV2,
     accurateRipConfidence: arConfidence,
     copyOk: copyOk,
     errors: TrackErrors(

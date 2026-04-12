@@ -1,5 +1,8 @@
 import 'models.dart';
+import 'parsers/cueripper_parser.dart';
+import 'parsers/dbpoweramp_parser.dart';
 import 'parsers/eac_parser.dart';
+import 'parsers/whipper_parser.dart';
 import 'parsers/xld_parser.dart';
 
 /// Detect which tool generated [content] without performing a full parse.
@@ -26,6 +29,12 @@ RipLog parseRipLog(String content) {
       return parseEac(content);
     case RipLogFormat.xld:
       return parseXld(content);
+    case RipLogFormat.cueRipper:
+      return parseCueRipper(content);
+    case RipLogFormat.whipper:
+      return parseWhipper(content);
+    case RipLogFormat.dbPoweramp:
+      return parseDbPoweramp(content);
     default:
       return RipLog(
         logFormat: RipLogFormat.unknown,

@@ -1,0 +1,65 @@
+{
+  "logFormat": "xld",
+  "toolVersion": "20230916 (153.8)",
+  "extractionDate": "2026-03-15T00:00:00.000",
+  "drive": {
+    "name": "PIONEER BD-RW BDR-212V (revision 1.04)",
+    "readOffset": 6
+  },
+  "readOffset": 6,
+  "gapHandling": "Analyzed, Appended to previous track",
+  "mediaType": "Pressed CD",
+  "tracks": [
+    {
+      "trackNumber": 1,
+      "filename": "/Music/TestAlbum/01 - Track One.flac",
+      "peakLevel": 0.9620000000000001,
+      "trackQuality": 1.0,
+      "copyCrc": "882B01BE",
+      "accurateRipStatus": "verified",
+      "accurateRipCrcV1": "F4E2268A",
+      "accurateRipCrcV2": "A1B2C3D4",
+      "accurateRipConfidence": 3,
+      "copyOk": true,
+      "errors": {
+        "readErrors": 0,
+        "skipErrors": 0,
+        "jitterErrors": 0,
+        "edgeJitterErrors": 0,
+        "atomJitterErrors": 0,
+        "driftErrors": 0,
+        "droppedBytes": 0,
+        "duplicatedBytes": 0,
+        "inconsistentErrorSectors": 0,
+        "damagedSectors": 0,
+        "hasErrors": false
+      },
+      "logFormat": "xld"
+    },
+    {
+      "trackNumber": 2,
+      "filename": "/Music/TestAlbum/02 - Track Two.flac",
+      "peakLevel": 0.753,
+      "trackQuality": 0.985,
+      "accurateRipStatus": "mismatch",
+      "accurateRipCrcV1": "F1F2F3F4",
+      "accurateRipCrcV2": "0A0B0C0D",
+      "copyOk": false,
+      "errors": {
+        "readErrors": 2,
+        "skipErrors": 0,
+        "jitterErrors": 1,
+        "edgeJitterErrors": 0,
+        "atomJitterErrors": 0,
+        "driftErrors": 0,
+        "droppedBytes": 0,
+        "duplicatedBytes": 0,
+        "inconsistentErrorSectors": 0,
+        "damagedSectors": 0,
+        "hasErrors": true
+      },
+      "logFormat": "xld"
+    }
+  ],
+  "errors": []
+}

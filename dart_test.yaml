@@ -1,0 +1,3 @@
+tags:
+  cli:
+    description: Integration tests that shell out to bin/riplog.dart.

@@ -767,5 +767,309 @@ Track  1
       expect(log.logFormat, RipLogFormat.xld);
       expect(log.tracks.length, greaterThanOrEqualTo(1));
     });
+
+    test('EAC errors fixture: populated error-stats block parsed', () {
+      final path =
+          '${Directory.current.path}/test/fixtures/eac_errors_sample.log';
+      if (!File(path).existsSync()) return;
+      final log = parseRipLog(File(path).readAsStringSync());
+      expect(log.tracks, hasLength(2));
+      final clean = log.tracks[0];
+      final damaged = log.tracks[1];
+      expect(clean.errors.hasErrors, isFalse);
+      expect(damaged.errors.hasErrors, isTrue);
+      expect(damaged.errors.readErrors, 3);
+      expect(damaged.errors.skipErrors, 1);
+      expect(damaged.errors.edgeJitterErrors, 2);
+      expect(damaged.errors.atomJitterErrors, 4);
+      expect(damaged.errors.driftErrors, 1);
+      expect(damaged.errors.droppedBytes, 5);
+      expect(damaged.errors.duplicatedBytes, 2);
+      expect(damaged.errors.inconsistentErrorSectors, 1);
+      expect(damaged.accurateRipStatus, AccurateRipStatus.mismatch);
+    });
+
+    test('EAC range fixture: single synthesised track', () {
+      final path =
+          '${Directory.current.path}/test/fixtures/eac_range_sample.log';
+      if (!File(path).existsSync()) return;
+      final log = parseRipLog(File(path).readAsStringSync());
+      expect(log.logFormat, RipLogFormat.eac);
+      expect(log.tracks, hasLength(1));
+      final t = log.tracks.first;
+      expect(t.trackNumber, 1);
+      expect(t.copyCrc, '0A1B2C3D');
+      expect(t.testCrc, '0A1B2C3D');
+      expect(t.peakLevel, closeTo(0.987, 0.0001));
+      expect(t.trackQuality, closeTo(0.999, 0.0001));
+      expect(t.copyOk, isTrue);
+      expect(t.filename, contains('full_disc.flac'));
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // EAC AR v2 signature capture
+  // -------------------------------------------------------------------------
+  group('EAC AR v2 signature', () {
+    test('captures v2 signature when present on verified line', () {
+      const withV2 = '''
+Exact Audio Copy V1.6 from 23. October 2019
+
+EAC extraction logfile from 15. March 2026
+
+Used drive : Some Drive
+
+Track  1
+
+     Filename C:\\a.flac
+     Peak level 90.0 %
+     Track quality 99.9 %
+     Copy CRC DEADBEEF
+     Accurately ripped (confidence 1)  [F4E2268A]  (AR v2 signature: A1B2C3D4)
+     Copy OK
+''';
+      final t = parseRipLog(withV2).tracks.first;
+      expect(t.accurateRipStatus, AccurateRipStatus.verified);
+      expect(t.accurateRipCrcV1, 'F4E2268A');
+      expect(t.accurateRipCrcV2, 'A1B2C3D4');
+    });
+
+    test('v2 signature null when absent', () {
+      const withoutV2 = '''
+Exact Audio Copy V1.6 from 23. October 2019
+
+EAC extraction logfile from 15. March 2026
+
+Used drive : Some Drive
+
+Track  1
+
+     Filename C:\\a.flac
+     Copy CRC DEADBEEF
+     Accurately ripped (confidence 1)  [F4E2268A]
+     Copy OK
+''';
+      final t = parseRipLog(withoutV2).tracks.first;
+      expect(t.accurateRipStatus, AccurateRipStatus.verified);
+      expect(t.accurateRipCrcV1, 'F4E2268A');
+      expect(t.accurateRipCrcV2, isNull);
+    });
+
+    test('eac_sample.log fixture Track 1 has v2 signature A1B2C3D4', () {
+      final path =
+          '${Directory.current.path}/test/fixtures/eac_sample.log';
+      if (!File(path).existsSync()) return;
+      final log = parseRipLog(File(path).readAsStringSync());
+      expect(log.tracks[0].accurateRipCrcV2, 'A1B2C3D4');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Bad / malformed input
+  // -------------------------------------------------------------------------
+  group('Bad and malformed input', () {
+    test('empty string → unknown format, no crash', () {
+      final log = parseRipLog('');
+      expect(log.logFormat, RipLogFormat.unknown);
+      expect(log.tracks, isEmpty);
+    });
+
+    test('whitespace-only input → unknown format', () {
+      final log = parseRipLog('   \n\n\t  \r\n');
+      expect(log.logFormat, RipLogFormat.unknown);
+      expect(log.tracks, isEmpty);
+    });
+
+    test('binary / non-UTF-ish noise → unknown format, no crash', () {
+      final log = parseRipLog('\x00\x01\x02\xFF garbage \x7F');
+      expect(log.logFormat, RipLogFormat.unknown);
+    });
+
+    test('very long single line → no crash', () {
+      final huge = 'X' * 200000;
+      expect(() => parseRipLog(huge), returnsNormally);
+    });
+
+    test('EAC signature with no tracks → empty track list', () {
+      final log = parseRipLog('Exact Audio Copy V1.6\n\nrandom noise');
+      expect(log.logFormat, RipLogFormat.eac);
+      expect(log.tracks, isEmpty);
+    });
+
+    test('EAC track with non-numeric track number → skipped', () {
+      const bad = '''
+Exact Audio Copy V1.6
+
+Track  ABC
+
+     Filename C:\\x.flac
+     Copy OK
+''';
+      final log = parseRipLog(bad);
+      expect(() => log, returnsNormally);
+      expect(log.tracks, isEmpty);
+    });
+
+    test('EAC invalid peak level (non-numeric %) → null peak, no crash', () {
+      const bad = '''
+Exact Audio Copy V1.6
+
+Track  1
+
+     Filename C:\\x.flac
+     Peak level xxx %
+     Copy OK
+''';
+      final t = parseRipLog(bad).tracks.first;
+      expect(t.peakLevel, isNull);
+    });
+
+    test('EAC invalid date string → null extractionDate', () {
+      const bad = '''
+Exact Audio Copy V1.6
+
+EAC extraction logfile from 99. Nonember 9999
+
+Used drive : X
+''';
+      final log = parseRipLog(bad);
+      expect(log.extractionDate, isNull);
+    });
+
+    test('EAC confidence not an integer → still verified, confidence null', () {
+      const bad = '''
+Exact Audio Copy V1.6
+
+Track  1
+
+     Filename C:\\x.flac
+     Copy CRC DEADBEEF
+     Accurately ripped (confidence NaN)  [AAAAAAAA]
+     Copy OK
+''';
+      final log = parseRipLog(bad);
+      // Malformed AR line should not crash; confidence line simply doesn't match.
+      expect(log.tracks, hasLength(1));
+      expect(log.tracks.first.accurateRipStatus, AccurateRipStatus.notChecked);
+    });
+
+    test('EAC truncated mid-track → parses available fields, no crash', () {
+      const truncated = '''
+Exact Audio Copy V1.6
+
+Track  1
+
+     Filename C:\\x.flac
+     Peak level 50.0 %
+     Track quality 9''';
+      expect(() => parseRipLog(truncated), returnsNormally);
+      final log = parseRipLog(truncated);
+      expect(log.tracks, hasLength(1));
+      expect(log.tracks.first.peakLevel, closeTo(0.5, 0.0001));
+    });
+
+    test('duplicate Track headers → each parsed as separate track', () {
+      const dup = '''
+Exact Audio Copy V1.6
+
+Track  1
+
+     Filename C:\\a.flac
+     Copy OK
+
+Track  1
+
+     Filename C:\\b.flac
+     Copy OK
+''';
+      final log = parseRipLog(dup);
+      expect(log.tracks, hasLength(2));
+      expect(log.tracks[0].trackNumber, 1);
+      expect(log.tracks[1].trackNumber, 1);
+    });
+
+    test('log with only footer summary → empty tracks, summary still parsed',
+        () {
+      const footerOnly = '''
+Exact Audio Copy V1.6
+
+All tracks accurately ripped
+
+==== Log checksum DEADBEEF ====
+''';
+      final log = parseRipLog(footerOnly);
+      expect(log.tracks, isEmpty);
+      expect(log.accurateRipSummary, contains('All tracks accurately ripped'));
+      expect(log.integrityHash, 'DEADBEEF');
+    });
+
+    test('XLD truncated statistics block → no crash', () {
+      const bad = '''
+X Lossless Decoder version 20230916 (153.8)
+
+XLD extraction logfile from 2026-01-01 00:00:00 +0900
+
+Used drive : D
+
+Track 01
+Filename : /a.flac
+CRC32 hash : AABBCCDD
+''';
+      expect(() => parseRipLog(bad), returnsNormally);
+    });
+
+    test('parseRipLogFile on non-UTF-8 binary file throws FileSystemException',
+        () async {
+      final tmpDir = await Directory.systemTemp.createTemp('riplog_bad_');
+      final tmpFile = File('${tmpDir.path}/bad.log');
+      await tmpFile.writeAsBytes(
+          List<int>.generate(1024, (i) => i % 256));
+      try {
+        await expectLater(
+          parseRipLogFile(tmpFile.path),
+          throwsA(isA<FileSystemException>()),
+        );
+      } finally {
+        await tmpDir.delete(recursive: true);
+      }
+    });
+
+    test('parseRipLogFile on ASCII-safe malformed file → unknown format',
+        () async {
+      final tmpDir = await Directory.systemTemp.createTemp('riplog_bad_');
+      final tmpFile = File('${tmpDir.path}/bad.log');
+      await tmpFile.writeAsString('Not a rip log at all. Just random words.');
+      try {
+        final log = await parseRipLogFile(tmpFile.path);
+        expect(log.logFormat, RipLogFormat.unknown);
+      } finally {
+        await tmpDir.delete(recursive: true);
+      }
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Scaffolded parsers (CUERipper / whipper / dBpoweramp)
+  // -------------------------------------------------------------------------
+  group('Scaffolded parsers', () {
+    test('CUERipper: dispatches and reports not-implemented', () {
+      final log = parseRipLog('CUERipper v2.1.7\nsome content');
+      expect(log.logFormat, RipLogFormat.cueRipper);
+      expect(log.toolVersion, '2.1.7');
+      expect(log.errors.any((e) => e.contains('not yet implemented')), isTrue);
+    });
+
+    test('whipper: dispatches and reports not-implemented', () {
+      final log = parseRipLog('Log created by: whipper 0.10.0\nsome content');
+      expect(log.logFormat, RipLogFormat.whipper);
+      expect(log.toolVersion, '0.10.0');
+      expect(log.errors.any((e) => e.contains('not yet implemented')), isTrue);
+    });
+
+    test('dBpoweramp: dispatches and reports not-implemented', () {
+      final log = parseRipLog('dBpoweramp CD Ripper Release 17.5\ncontent');
+      expect(log.logFormat, RipLogFormat.dbPoweramp);
+      expect(log.errors.any((e) => e.contains('not yet implemented')), isTrue);
+    });
   });
 }
