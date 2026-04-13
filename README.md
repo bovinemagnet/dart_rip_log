@@ -111,17 +111,30 @@ Then:
 ```sh
 riplog --format json my_rip.log          # pretty-printed JSON (default)
 riplog --format text my_rip.log          # human-readable
+riplog --format ndjson *.log             # one JSON per line (jq-friendly)
 riplog --summary my_rip.log              # one line per track
 riplog -q *.log                          # tab-separated one line per file
+riplog -r ~/music/rips/                  # walk directory for *.log
+riplog --filter problems log.log         # only mismatch / errored tracks
+riplog --fail-on mismatch -q *.log       # exit 1 only on AR mismatch
+riplog --color always log.log | less -R  # keep colour through pagers
 cat my_rip.log | riplog -q -             # read from stdin
 riplog --help                            # full usage
-riplog --version
 ```
 
-Exit codes are scripting-friendly: `0` = all tracks verified and error-free,
-`1` = AR mismatch or track errors detected, `2` = bad arguments or I/O error.
-With multiple files the JSON output is an array; with `--format text` or
-`--summary` each file is prefixed with `# <path>`.
+Exit-code policy is controlled by `--fail-on`:
+
+| Policy      | Exits 1 when…                                   |
+| ----------- | ----------------------------------------------- |
+| `any`       | default — any AR mismatch or track error counts |
+| `mismatch`  | any AR mismatch                                 |
+| `errors`    | any track error counts                          |
+| `never`     | never (always exits 0 on successful parse)      |
+
+`2` is always returned for bad arguments or I/O errors. With multiple files
+the JSON output is an array (one entry per file); `ndjson` emits one object
+per line; `text` / `--summary` each file is prefixed with `# <path>`.
+Colour output respects `NO_COLOR` and `stdout.hasTerminal` by default.
 
 ## Data model
 

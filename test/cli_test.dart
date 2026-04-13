@@ -151,5 +151,146 @@ void main() {
       expect(r.stdout.toString(), contains('# test/fixtures/eac_sample.log'));
       expect(r.stdout.toString(), contains('# test/fixtures/xld_sample.log'));
     });
+
+    test('--format ndjson: one JSON object per line', () async {
+      final r = await run([
+        '--format',
+        'ndjson',
+        'test/fixtures/eac_sample.log',
+        'test/fixtures/xld_sample.log',
+      ]);
+      final lines = r.stdout
+          .toString()
+          .trim()
+          .split('\n')
+          .where((l) => l.isNotEmpty)
+          .toList();
+      expect(lines, hasLength(2));
+      final first = jsonDecode(lines[0]) as Map<String, dynamic>;
+      final second = jsonDecode(lines[1]) as Map<String, dynamic>;
+      expect(first['logFormat'], 'eac');
+      expect(second['logFormat'], 'xld');
+    });
+
+    test('--filter problems hides verified tracks in summary output', () async {
+      final r = await run([
+        '--summary',
+        '--filter',
+        'problems',
+        'test/fixtures/eac_sample.log',
+      ]);
+      // eac_sample.log: track 1 verified (hidden), track 2 mismatch,
+      // track 3 notInDatabase. With filter=problems only mismatches and
+      // error tracks remain → track 2 shown, track 3 hidden.
+      final trackLines = r.stdout
+          .toString()
+          .split('\n')
+          .where((l) => l.contains('Track '))
+          .toList();
+      expect(trackLines, hasLength(1));
+      expect(trackLines.first, contains('Track  2'));
+    });
+
+    test('--filter mismatch shows only mismatched tracks', () async {
+      final r = await run([
+        '--summary',
+        '--filter',
+        'mismatch',
+        'test/fixtures/eac_sample.log',
+      ]);
+      final trackLines = r.stdout
+          .toString()
+          .split('\n')
+          .where((l) => l.contains('Track '))
+          .toList();
+      expect(trackLines, hasLength(1));
+      expect(trackLines.first, contains('mismatch'));
+    });
+
+    test('--fail-on never → exit 0 even on mismatch', () async {
+      final r = await run([
+        '--fail-on',
+        'never',
+        '-q',
+        'test/fixtures/eac_errors_sample.log',
+      ]);
+      expect(r.exitCode, 0);
+    });
+
+    test('--fail-on mismatch → exit 1 only on AR mismatch', () async {
+      // eac_errors_sample has an AR mismatch → should fail.
+      final r = await run([
+        '--fail-on',
+        'mismatch',
+        '-q',
+        'test/fixtures/eac_errors_sample.log',
+      ]);
+      expect(r.exitCode, 1);
+    });
+
+    test('--fail-on errors triggers on track errors only', () async {
+      // eac_sample has mismatches but no track error counts → with
+      // fail-on=errors should exit 0.
+      final r = await run([
+        '--fail-on',
+        'errors',
+        '-q',
+        'test/fixtures/eac_sample.log',
+      ]);
+      expect(r.exitCode, 0);
+    });
+
+    test('invalid --filter value → exit 2', () async {
+      final r =
+          await run(['--filter', 'bogus', 'test/fixtures/eac_sample.log']);
+      expect(r.exitCode, 2);
+    });
+
+    test('invalid --fail-on value → exit 2', () async {
+      final r =
+          await run(['--fail-on', 'bogus', 'test/fixtures/eac_sample.log']);
+      expect(r.exitCode, 2);
+    });
+
+    test('--color never produces no ANSI escape codes', () async {
+      final r = await run([
+        '--format',
+        'text',
+        '--color',
+        'never',
+        'test/fixtures/eac_sample.log',
+      ]);
+      expect(r.stdout.toString(), isNot(contains('\x1B[')));
+    });
+
+    test('--color always emits ANSI escape codes', () async {
+      final r = await run([
+        '--format',
+        'text',
+        '--color',
+        'always',
+        'test/fixtures/eac_sample.log',
+      ]);
+      expect(r.stdout.toString(), contains('\x1B['));
+    });
+
+    test('directory without --recursive → exit 2', () async {
+      final r = await run(['test/fixtures']);
+      expect(r.exitCode, 2);
+    });
+
+    test('--recursive walks directory for *.log files', () async {
+      final r = await run(['-q', '--recursive', 'test/fixtures']);
+      final lines = r.stdout
+          .toString()
+          .trim()
+          .split('\n')
+          .where((l) => l.isNotEmpty)
+          .toList();
+      // test/fixtures has 4 .log files: eac_sample, eac_errors_sample,
+      // eac_range_sample, xld_sample.
+      expect(lines, hasLength(4));
+      expect(lines.every((l) => l.contains('.log\t')), isTrue);
+    });
   });
 }

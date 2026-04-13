@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.0.5
+
+- CLI: `--format ndjson` — streaming-friendly one-JSON-object-per-line
+  output (useful with jq and log pipelines).
+- CLI: `--filter <mode>` — hide non-problem tracks in `--format text`
+  / `--summary` output. Values: `all` (default), `mismatch`, `errors`,
+  `problems` (mismatch or error counts).
+- CLI: `--fail-on <policy>` — choose which conditions trigger exit 1.
+  Values: `any` (default, current behaviour), `mismatch`, `errors`,
+  `never`. Useful for tuning CI pipelines.
+- CLI: `-r` / `--recursive` — walk directories for `*.log` files
+  instead of requiring individual paths.
+- CLI: `--color <mode>` — `auto` (default, based on `stdout.hasTerminal`
+  and `NO_COLOR`), `always`, `never`. Colours AR status (verified →
+  green, mismatch → red, notInDatabase → yellow, notChecked → dim)
+  and the `ERRORS` label.
+- CLI tests grown to 27 (all covered by the new flags). Total suite: 190.
+
 ## 0.0.4
 
 - EAC: parse localised month names in the extraction date. Coverage for
