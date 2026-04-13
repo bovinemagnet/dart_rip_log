@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.0.3
+
+- Added `fromJson` constructors on `RipLog`, `RipLogTrack`, `TrackErrors`,
+  and `DriveInfo`, completing the JSON round-trip. Unknown enum values
+  degrade to `unknown` / `notChecked` rather than throwing, so logs
+  serialised by a newer library version remain readable on older
+  versions.
+- Models now implement `==` and `hashCode` (field-wise), so two parsed
+  logs can be compared directly and used as map keys / in sets.
+- New diff utility `compareRipLogs(a, b)` returns a structured
+  `RipLogDiff` with per-field entries (`tracks[N].copyCrc`,
+  `tracks[N].errors.readErrors`, etc.). Tracks present on only one side
+  are reported as `trackAdded` / `trackRemoved`. Parser-level warnings
+  in `RipLog.errors` are intentionally ignored so re-parses on a newer
+  library don't surface as diffs. Exported types: `compareRipLogs`,
+  `RipLogDiff`, `RipLogDiffEntry`, `RipLogDiffKind`.
+- Test suite grown to 171 tests (round-trip, equality, diff).
+
 ## 0.0.2
 
 - Relicensed from GPL-3.0 to Apache-2.0.

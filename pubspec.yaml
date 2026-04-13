@@ -2,7 +2,7 @@ name: dart_rip_log
 description: >
   Parses CD rip log files from EAC, XLD, and other rippers into structured,
   JSON-serialisable quality data (AccurateRip, CRCs, peaks, errors).
-version: 0.0.2
+version: 0.0.3
 homepage: https://github.com/bovinemagnet/dart_rip_log
 repository: https://github.com/bovinemagnet/dart_rip_log
 issue_tracker: https://github.com/bovinemagnet/dart_rip_log/issues

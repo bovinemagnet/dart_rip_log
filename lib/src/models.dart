@@ -16,6 +16,23 @@ enum AccurateRipStatus {
   notChecked,
 }
 
+T _enumByName<T extends Enum>(List<T> values, Object? name, T fallback) {
+  if (name is! String) return fallback;
+  for (final v in values) {
+    if (v.name == name) return v;
+  }
+  return fallback;
+}
+
+bool _listEquals<T>(List<T> a, List<T> b) {
+  if (identical(a, b)) return true;
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
+}
+
 /// Drive information extracted from the log header.
 class DriveInfo {
   /// Drive model name (e.g. "ASUS BW-16D1HT").
@@ -33,12 +50,30 @@ class DriveInfo {
     this.adapter,
   });
 
+  /// Reconstruct a [DriveInfo] from its JSON form (as produced by [toJson]).
+  factory DriveInfo.fromJson(Map<String, dynamic> json) => DriveInfo(
+        name: json['name'] as String,
+        readOffset: json['readOffset'] as int?,
+        adapter: json['adapter'] as String?,
+      );
+
   /// Convert to a JSON-compatible map.
   Map<String, dynamic> toJson() => {
         'name': name,
         if (readOffset != null) 'readOffset': readOffset,
         if (adapter != null) 'adapter': adapter,
       };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DriveInfo &&
+          other.name == name &&
+          other.readOffset == readOffset &&
+          other.adapter == adapter);
+
+  @override
+  int get hashCode => Object.hash(name, readOffset, adapter);
 }
 
 /// Per-track error statistics reported by the ripper.
@@ -67,6 +102,22 @@ class TrackErrors {
     this.damagedSectors = 0,
   });
 
+  /// Reconstruct a [TrackErrors] from its JSON form. Missing fields default
+  /// to `0` so partial payloads are tolerated.
+  factory TrackErrors.fromJson(Map<String, dynamic> json) => TrackErrors(
+        readErrors: (json['readErrors'] as int?) ?? 0,
+        skipErrors: (json['skipErrors'] as int?) ?? 0,
+        jitterErrors: (json['jitterErrors'] as int?) ?? 0,
+        edgeJitterErrors: (json['edgeJitterErrors'] as int?) ?? 0,
+        atomJitterErrors: (json['atomJitterErrors'] as int?) ?? 0,
+        driftErrors: (json['driftErrors'] as int?) ?? 0,
+        droppedBytes: (json['droppedBytes'] as int?) ?? 0,
+        duplicatedBytes: (json['duplicatedBytes'] as int?) ?? 0,
+        inconsistentErrorSectors:
+            (json['inconsistentErrorSectors'] as int?) ?? 0,
+        damagedSectors: (json['damagedSectors'] as int?) ?? 0,
+      );
+
   /// Returns `true` if any error count is greater than zero.
   bool get hasErrors =>
       readErrors > 0 ||
@@ -94,6 +145,35 @@ class TrackErrors {
         'damagedSectors': damagedSectors,
         'hasErrors': hasErrors,
       };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TrackErrors &&
+          other.readErrors == readErrors &&
+          other.skipErrors == skipErrors &&
+          other.jitterErrors == jitterErrors &&
+          other.edgeJitterErrors == edgeJitterErrors &&
+          other.atomJitterErrors == atomJitterErrors &&
+          other.driftErrors == driftErrors &&
+          other.droppedBytes == droppedBytes &&
+          other.duplicatedBytes == duplicatedBytes &&
+          other.inconsistentErrorSectors == inconsistentErrorSectors &&
+          other.damagedSectors == damagedSectors);
+
+  @override
+  int get hashCode => Object.hash(
+        readErrors,
+        skipErrors,
+        jitterErrors,
+        edgeJitterErrors,
+        atomJitterErrors,
+        driftErrors,
+        droppedBytes,
+        duplicatedBytes,
+        inconsistentErrorSectors,
+        damagedSectors,
+      );
 }
 
 /// Per-track quality data — unified across all log formats.
@@ -153,6 +233,27 @@ class RipLogTrack {
     this.logFormat = RipLogFormat.unknown,
   }) : errors = errors ?? const TrackErrors();
 
+  /// Reconstruct a [RipLogTrack] from its JSON form.
+  factory RipLogTrack.fromJson(Map<String, dynamic> json) => RipLogTrack(
+        trackNumber: json['trackNumber'] as int,
+        filename: json['filename'] as String?,
+        peakLevel: (json['peakLevel'] as num?)?.toDouble(),
+        trackQuality: (json['trackQuality'] as num?)?.toDouble(),
+        copyCrc: json['copyCrc'] as String?,
+        testCrc: json['testCrc'] as String?,
+        accurateRipStatus: _enumByName(AccurateRipStatus.values,
+            json['accurateRipStatus'], AccurateRipStatus.notChecked),
+        accurateRipCrcV1: json['accurateRipCrcV1'] as String?,
+        accurateRipCrcV2: json['accurateRipCrcV2'] as String?,
+        accurateRipConfidence: json['accurateRipConfidence'] as int?,
+        copyOk: (json['copyOk'] as bool?) ?? false,
+        errors: json['errors'] is Map<String, dynamic>
+            ? TrackErrors.fromJson(json['errors'] as Map<String, dynamic>)
+            : const TrackErrors(),
+        logFormat: _enumByName(
+            RipLogFormat.values, json['logFormat'], RipLogFormat.unknown),
+      );
+
   /// Convert to a JSON-compatible map.
   Map<String, dynamic> toJson() => {
         'trackNumber': trackNumber,
@@ -170,6 +271,41 @@ class RipLogTrack {
         'errors': errors.toJson(),
         'logFormat': logFormat.name,
       };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RipLogTrack &&
+          other.trackNumber == trackNumber &&
+          other.filename == filename &&
+          other.peakLevel == peakLevel &&
+          other.trackQuality == trackQuality &&
+          other.copyCrc == copyCrc &&
+          other.testCrc == testCrc &&
+          other.accurateRipStatus == accurateRipStatus &&
+          other.accurateRipCrcV1 == accurateRipCrcV1 &&
+          other.accurateRipCrcV2 == accurateRipCrcV2 &&
+          other.accurateRipConfidence == accurateRipConfidence &&
+          other.copyOk == copyOk &&
+          other.errors == errors &&
+          other.logFormat == logFormat);
+
+  @override
+  int get hashCode => Object.hash(
+        trackNumber,
+        filename,
+        peakLevel,
+        trackQuality,
+        copyCrc,
+        testCrc,
+        accurateRipStatus,
+        accurateRipCrcV1,
+        accurateRipCrcV2,
+        accurateRipConfidence,
+        copyOk,
+        errors,
+        logFormat,
+      );
 }
 
 /// Top-level result from parsing a complete log file.
@@ -230,6 +366,37 @@ class RipLog {
   })  : tracks = tracks ?? const [],
         errors = errors ?? const [];
 
+  /// Reconstruct a [RipLog] from its JSON form (as produced by [toJson]).
+  ///
+  /// Unknown enum values degrade to [RipLogFormat.unknown] /
+  /// [AccurateRipStatus.notChecked] rather than throwing, so round-tripping
+  /// a log produced by a newer library version is safe for consumers on
+  /// older versions.
+  factory RipLog.fromJson(Map<String, dynamic> json) => RipLog(
+        logFormat: _enumByName(
+            RipLogFormat.values, json['logFormat'], RipLogFormat.unknown),
+        toolVersion: json['toolVersion'] as String?,
+        extractionDate: json['extractionDate'] is String
+            ? DateTime.tryParse(json['extractionDate'] as String)
+            : null,
+        drive: json['drive'] is Map<String, dynamic>
+            ? DriveInfo.fromJson(json['drive'] as Map<String, dynamic>)
+            : null,
+        readMode: json['readMode'] as String?,
+        readOffset: json['readOffset'] as int?,
+        overread: json['overread'] as bool?,
+        gapHandling: json['gapHandling'] as String?,
+        mediaType: json['mediaType'] as String?,
+        tracks: (json['tracks'] as List?)
+                ?.cast<Map<String, dynamic>>()
+                .map(RipLogTrack.fromJson)
+                .toList() ??
+            const [],
+        accurateRipSummary: json['accurateRipSummary'] as String?,
+        integrityHash: json['integrityHash'] as String?,
+        errors: (json['errors'] as List?)?.cast<String>() ?? const [],
+      );
+
   /// Convert to a JSON-compatible map.
   Map<String, dynamic> toJson() => {
         'logFormat': logFormat.name,
@@ -248,4 +415,39 @@ class RipLog {
         if (integrityHash != null) 'integrityHash': integrityHash,
         'errors': errors,
       };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RipLog &&
+          other.logFormat == logFormat &&
+          other.toolVersion == toolVersion &&
+          other.extractionDate == extractionDate &&
+          other.drive == drive &&
+          other.readMode == readMode &&
+          other.readOffset == readOffset &&
+          other.overread == overread &&
+          other.gapHandling == gapHandling &&
+          other.mediaType == mediaType &&
+          _listEquals(other.tracks, tracks) &&
+          other.accurateRipSummary == accurateRipSummary &&
+          other.integrityHash == integrityHash &&
+          _listEquals(other.errors, errors));
+
+  @override
+  int get hashCode => Object.hash(
+        logFormat,
+        toolVersion,
+        extractionDate,
+        drive,
+        readMode,
+        readOffset,
+        overread,
+        gapHandling,
+        mediaType,
+        Object.hashAll(tracks),
+        accurateRipSummary,
+        integrityHash,
+        Object.hashAll(errors),
+      );
 }

@@ -86,6 +86,17 @@ if (log.logFormat == RipLogFormat.unknown) {
 - `tracksWithErrors(log)` — tracks whose `TrackErrors.hasErrors` is true.
 - `tracksWithArMismatch(log)` — tracks whose AccurateRip check failed.
 - `toJson(log)` — JSON-compatible `Map<String, dynamic>`.
+- `RipLog.fromJson(map)` — inverse of `toJson`. All models support
+  round-trip serialisation.
+- `compareRipLogs(a, b)` — structured per-field diff between two logs,
+  useful for verifying re-rips:
+
+  ```dart
+  final diff = compareRipLogs(oldLog, newLog);
+  for (final e in diff.trackDifferences) {
+    print('${e.path}: ${e.left} → ${e.right}');
+  }
+  ```
 
 ## Command-line tool
 
