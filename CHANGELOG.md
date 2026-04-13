@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.2
+
+- Relicensed from GPL-3.0 to Apache-2.0.
+
 ## 0.0.1
 
 - Initial release.
