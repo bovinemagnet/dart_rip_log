@@ -19,7 +19,8 @@ void _printUsage(IOSink sink) {
   sink.writeln('  --format <fmt>   Output format: json (default), text');
   sink.writeln('  --summary        One line per track summary');
   sink.writeln('  -q, --quiet      One machine-readable line per file:');
-  sink.writeln('                   <path>\\t<format>\\t<tracks>\\t<verified>\\t<errors>');
+  sink.writeln(
+      '                   <path>\\t<format>\\t<tracks>\\t<verified>\\t<errors>');
   sink.writeln('');
   sink.writeln('Exit codes:');
   sink.writeln('  0  all files parsed, every track verified, no track errors');
@@ -50,7 +51,8 @@ Future<void> main(List<String> args) async {
         }
         format = args[++i];
         if (format != 'json' && format != 'text') {
-          stderr.writeln('Unknown --format value: $format (expected json or text)');
+          stderr.writeln(
+              'Unknown --format value: $format (expected json or text)');
           exit(2);
         }
       case '--summary':
@@ -93,9 +95,8 @@ Future<void> main(List<String> args) async {
     final path = inputs[idx];
     final String content;
     try {
-      content = path == '-'
-          ? await _readStdin()
-          : await File(path).readAsString();
+      content =
+          path == '-' ? await _readStdin() : await File(path).readAsString();
     } on FileSystemException catch (e) {
       stderr.writeln('Cannot read $path: ${e.message}');
       exit(2);
@@ -103,7 +104,8 @@ Future<void> main(List<String> args) async {
 
     final log = parseRipLog(content);
 
-    final trackFailed = !isFullyVerified(log) || tracksWithErrors(log).isNotEmpty;
+    final trackFailed =
+        !isFullyVerified(log) || tracksWithErrors(log).isNotEmpty;
     if (trackFailed) overallExit = 1;
 
     if (quiet) {
@@ -165,7 +167,9 @@ void _printSummary(RipLog log) {
 
 void _printText(RipLog log) {
   stdout.writeln('Log format  : ${log.logFormat.name}');
-  if (log.toolVersion != null) stdout.writeln('Tool version: ${log.toolVersion}');
+  if (log.toolVersion != null) {
+    stdout.writeln('Tool version: ${log.toolVersion}');
+  }
   if (log.extractionDate != null) {
     stdout.writeln('Date        : ${log.extractionDate}');
   }
@@ -185,7 +189,8 @@ void _printText(RipLog log) {
       stdout.writeln('  Peak   : ${(t.peakLevel! * 100).toStringAsFixed(1)}%');
     }
     if (t.trackQuality != null) {
-      stdout.writeln('  Quality: ${(t.trackQuality! * 100).toStringAsFixed(1)}%');
+      stdout
+          .writeln('  Quality: ${(t.trackQuality! * 100).toStringAsFixed(1)}%');
     }
     if (t.errors.hasErrors) {
       stdout.writeln('  ERRORS :');

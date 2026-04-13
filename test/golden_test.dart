@@ -30,10 +30,11 @@ void main() {
       }
       final log = parseRipLog(File(logPath).readAsStringSync());
       final actual = toJson(log);
-      final expected =
-          jsonDecode(File(goldenPath).readAsStringSync()) as Map<String, dynamic>;
+      final expected = jsonDecode(File(goldenPath).readAsStringSync())
+          as Map<String, dynamic>;
       expect(actual, equals(expected),
-          reason: 'JSON shape drift in $name. Regenerate golden if intentional.');
+          reason:
+              'JSON shape drift in $name. Regenerate golden if intentional.');
     });
   }
 }

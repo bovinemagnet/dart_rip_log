@@ -3,8 +3,8 @@ import 'models.dart';
 /// Returns `true` if every track in [log] was accurately ripped.
 ///
 /// An empty track list returns `true` (vacuously verified).
-bool isFullyVerified(RipLog log) => log.tracks.every(
-    (t) => t.accurateRipStatus == AccurateRipStatus.verified);
+bool isFullyVerified(RipLog log) =>
+    log.tracks.every((t) => t.accurateRipStatus == AccurateRipStatus.verified);
 
 /// Returns the subset of tracks in [log] that have any non-zero error counts.
 List<RipLogTrack> tracksWithErrors(RipLog log) =>

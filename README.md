@@ -1,5 +1,9 @@
 # dart_rip_log
 
+[![CI](https://github.com/bovinemagnet/dart_rip_log/actions/workflows/ci.yml/badge.svg)](https://github.com/bovinemagnet/dart_rip_log/actions/workflows/ci.yml)
+[![pub package](https://img.shields.io/pub/v/dart_rip_log.svg)](https://pub.dev/packages/dart_rip_log)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+
 A pure Dart library that parses CD rip log files from the major CD-ripping tools
 (EAC, XLD) into structured, JSON-serialisable quality data. Extracts
 AccurateRip verification status, CRC-32 checksums, peak levels, track quality,

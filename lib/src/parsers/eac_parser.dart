@@ -7,18 +7,15 @@ import '../utils.dart';
 
 final _reVersion =
     RegExp(r'Exact Audio Copy\s+(V[\d.]+)', caseSensitive: false);
-final _reDate = RegExp(
-    r'EAC extraction logfile from\s+(\d+\.\s+\w+\s+\d{4})',
+final _reDate = RegExp(r'EAC extraction logfile from\s+(\d+\.\s+\w+\s+\d{4})',
     caseSensitive: false);
 final _reDrive = RegExp(r'Used drive\s*:\s*(.+)', caseSensitive: false);
 final _reReadMode = RegExp(r'Read mode\s*:\s*(.+)', caseSensitive: false);
 final _reReadOffset =
     RegExp(r'Read offset correction\s*:\s*(-?\d+)', caseSensitive: false);
-final _reOverread = RegExp(
-    r'Overread into Lead-In and Lead-Out\s*:\s*(\w+)',
+final _reOverread = RegExp(r'Overread into Lead-In and Lead-Out\s*:\s*(\w+)',
     caseSensitive: false);
-final _reGapHandling =
-    RegExp(r'Gap handling\s*:\s*(.+)', caseSensitive: false);
+final _reGapHandling = RegExp(r'Gap handling\s*:\s*(.+)', caseSensitive: false);
 final _reMediaType = RegExp(r'Used media\s*:\s*(.+)', caseSensitive: false);
 
 // ---------------------------------------------------------------------------
@@ -38,8 +35,7 @@ final _reTrackHeader = RegExp(r'^Track\s+(\d+)\s*$', caseSensitive: false);
 final _reRangeHeader =
     RegExp(r'^Range status and errors\s*$', caseSensitive: false);
 final _reFilename = RegExp(r'Filename\s+(.+)', caseSensitive: false);
-final _rePeakLevel =
-    RegExp(r'Peak level\s+([\d.]+)\s*%', caseSensitive: false);
+final _rePeakLevel = RegExp(r'Peak level\s+([\d.]+)\s*%', caseSensitive: false);
 final _reTrackQuality =
     RegExp(r'(?:Track|Range) quality\s+([\d.]+)\s*%', caseSensitive: false);
 final _reTestCrc = RegExp(r'Test CRC\s+([0-9A-Fa-f]+)', caseSensitive: false);
@@ -58,10 +54,8 @@ final _reArNotPresent =
     RegExp(r'Track not present in AccurateRip database', caseSensitive: false);
 
 // Error statistics (EAC uses individual lines per error type)
-final _reReadError =
-    RegExp(r'Read error\s*:\s*(\d+)', caseSensitive: false);
-final _reSkipError =
-    RegExp(r'Skip error\s*:\s*(\d+)', caseSensitive: false);
+final _reReadError = RegExp(r'Read error\s*:\s*(\d+)', caseSensitive: false);
+final _reSkipError = RegExp(r'Skip error\s*:\s*(\d+)', caseSensitive: false);
 final _reEdgeJitter =
     RegExp(r'Edge jitter error.*?:\s*(\d+)', caseSensitive: false);
 final _reAtomJitter =
@@ -197,8 +191,8 @@ RipLog parseEac(String content) {
   // ---- Parse tracks ----
   final tracks = <RipLogTrack>[];
   for (final section in trackSections) {
-    final track = _parseTrackSection(section, parsingErrors,
-        isRange: isRangeRip);
+    final track =
+        _parseTrackSection(section, parsingErrors, isRange: isRangeRip);
     if (track != null) tracks.add(track);
   }
 
@@ -244,8 +238,7 @@ RipLog parseEac(String content) {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-RipLogTrack? _parseTrackSection(
-    List<String> lines, List<String> parsingErrors,
+RipLogTrack? _parseTrackSection(List<String> lines, List<String> parsingErrors,
     {bool isRange = false}) {
   int? trackNumber = isRange ? 1 : null;
   String? filename;

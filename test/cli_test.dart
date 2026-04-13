@@ -53,8 +53,7 @@ void main() {
     });
 
     test('--format json produces valid JSON', () async {
-      final r = await run(
-          ['--format', 'json', 'test/fixtures/eac_sample.log']);
+      final r = await run(['--format', 'json', 'test/fixtures/eac_sample.log']);
       expect(r.exitCode, anyOf(0, 1));
       final decoded = jsonDecode(r.stdout.toString());
       expect(decoded, isMap);
@@ -63,8 +62,7 @@ void main() {
     });
 
     test('--format text prints human-readable output', () async {
-      final r = await run(
-          ['--format', 'text', 'test/fixtures/eac_sample.log']);
+      final r = await run(['--format', 'text', 'test/fixtures/eac_sample.log']);
       expect(r.stdout.toString(), contains('Log format'));
       expect(r.stdout.toString(), contains('Track 1'));
     });
@@ -101,8 +99,7 @@ void main() {
     });
 
     test('stdin via "-" sentinel', () async {
-      final content =
-          await File('test/fixtures/eac_sample.log').readAsString();
+      final content = await File('test/fixtures/eac_sample.log').readAsString();
       final r = await run(['-q', '-'], stdinText: content);
       final parts = r.stdout.toString().trim().split('\t');
       expect(parts[1], 'eac');
@@ -110,8 +107,7 @@ void main() {
     });
 
     test('piped stdin with no arg is read automatically', () async {
-      final content =
-          await File('test/fixtures/eac_sample.log').readAsString();
+      final content = await File('test/fixtures/eac_sample.log').readAsString();
       final r = await run(['-q'], stdinText: content);
       final parts = r.stdout.toString().trim().split('\t');
       expect(parts[1], 'eac');

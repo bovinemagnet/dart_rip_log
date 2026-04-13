@@ -5,18 +5,16 @@ import '../utils.dart';
 // Header regexes
 // ---------------------------------------------------------------------------
 
-final _reVersion =
-    RegExp(r'X Lossless Decoder version\s+(\S+(?:\s+\([^)]+\))?)',
-        caseSensitive: false);
-final _reDate = RegExp(
-    r'XLD extraction logfile from\s+(\d{4}-\d{2}-\d{2})',
+final _reVersion = RegExp(
+    r'X Lossless Decoder version\s+(\S+(?:\s+\([^)]+\))?)',
+    caseSensitive: false);
+final _reDate = RegExp(r'XLD extraction logfile from\s+(\d{4}-\d{2}-\d{2})',
     caseSensitive: false);
 final _reDrive = RegExp(r'Used drive\s*:\s*(.+)', caseSensitive: false);
 final _reReadOffset =
     RegExp(r'Read offset correction\s*:\s*(-?\d+)', caseSensitive: false);
 final _reGapStatus = RegExp(r'Gap status\s*:\s*(.+)', caseSensitive: false);
-final _reMediaType =
-    RegExp(r'Media type\s*:\s*(.+)', caseSensitive: false);
+final _reMediaType = RegExp(r'Media type\s*:\s*(.+)', caseSensitive: false);
 
 // ---------------------------------------------------------------------------
 // Track-section regex
@@ -28,15 +26,12 @@ final _reTrackHeader = RegExp(r'^Track\s+(\d+)\s*$', caseSensitive: false);
 // Per-track field regexes
 // ---------------------------------------------------------------------------
 
-final _reFilename =
-    RegExp(r'Filename\s*:\s*(.+)', caseSensitive: false);
+final _reFilename = RegExp(r'Filename\s*:\s*(.+)', caseSensitive: false);
 final _reCrc32 =
     RegExp(r'CRC32 hash\s*:\s*([0-9A-Fa-f]+)', caseSensitive: false);
-final _reArV1 = RegExp(
-    r'AccurateRip v1 signature\s*:\s*([0-9A-Fa-f]+)',
+final _reArV1 = RegExp(r'AccurateRip v1 signature\s*:\s*([0-9A-Fa-f]+)',
     caseSensitive: false);
-final _reArV2 = RegExp(
-    r'AccurateRip v2 signature\s*:\s*([0-9A-Fa-f]+)',
+final _reArV2 = RegExp(r'AccurateRip v2 signature\s*:\s*([0-9A-Fa-f]+)',
     caseSensitive: false);
 
 // AccurateRip result lines (start with "->")
@@ -46,8 +41,8 @@ final _reArVerified = RegExp(
     caseSensitive: false);
 final _reArNotVerified =
     RegExp(r'->\s*NOT verified as accurate', caseSensitive: false);
-final _reArNotInDb =
-    RegExp(r'->\s*Track not present in AccurateRip database', caseSensitive: false);
+final _reArNotInDb = RegExp(r'->\s*Track not present in AccurateRip database',
+    caseSensitive: false);
 
 // XLD statistics block
 final _reStatReadError =

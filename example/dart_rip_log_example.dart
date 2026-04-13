@@ -29,8 +29,9 @@ Future<void> main(List<String> args) async {
 
   for (final track in log.tracks) {
     final ar = track.accurateRipStatus.name;
-    final peak =
-        track.peakLevel != null ? (track.peakLevel! * 100).toStringAsFixed(1) : '-';
+    final peak = track.peakLevel != null
+        ? (track.peakLevel! * 100).toStringAsFixed(1)
+        : '-';
     print('Track ${track.trackNumber.toString().padLeft(2)}: '
         'AR=$ar  peak=$peak%  CRC=${track.copyCrc ?? "-"}');
   }

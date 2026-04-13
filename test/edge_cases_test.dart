@@ -190,8 +190,7 @@ Track  1
       final r = parseRipLog(log);
       expect(r.logFormat, RipLogFormat.eac);
       expect(r.extractionDate, isNull,
-          reason:
-              'German month names are not yet understood; the rest of the '
+          reason: 'German month names are not yet understood; the rest of the '
               'log still parses.');
       expect(r.tracks, hasLength(1));
     });
@@ -317,7 +316,8 @@ Statistics
           ..writeln('     Filename C:\\track_$i.flac')
           ..writeln('     Peak level 90.0 %')
           ..writeln('     Track quality 99.9 %')
-          ..writeln('     Copy CRC ${i.toRadixString(16).padLeft(8, '0').toUpperCase()}')
+          ..writeln(
+              '     Copy CRC ${i.toRadixString(16).padLeft(8, '0').toUpperCase()}')
           ..writeln('     Accurately ripped (confidence 1)  [AAAAAAAA]')
           ..writeln('     Copy OK')
           ..writeln('');
@@ -379,7 +379,8 @@ Statistics
       final json = toJson(log);
       expect(json['logFormat'], 'unknown');
       expect(json['tracks'], isEmpty);
-      expect(() => File.fromUri(Uri.parse('file:///dev/null')), returnsNormally);
+      expect(
+          () => File.fromUri(Uri.parse('file:///dev/null')), returnsNormally);
     });
 
     test('RipLogTrack default log format is unknown', () {

@@ -3,6 +3,12 @@
 ## 0.0.2
 
 - Relicensed from GPL-3.0 to Apache-2.0.
+- Added GitHub Actions CI (analyze + test on Linux/macOS/Windows against
+  stable and beta Dart SDKs, plus a `dart pub publish --dry-run` gate).
+- Added dartdoc generation to CI to keep the public API documented.
+- Added a release workflow that publishes prebuilt `riplog` binaries for
+  Linux x64, macOS arm64, and Windows x64 on every `v*` tag.
+- README now carries CI, pub, and licence badges.
 
 ## 0.0.1
 

@@ -189,8 +189,7 @@ void main() {
     });
 
     test('track 1: filename with backslash path', () {
-      expect(log.tracks[0].filename,
-          contains('01 - Track One.flac'));
+      expect(log.tracks[0].filename, contains('01 - Track One.flac'));
     });
 
     test('track 1: peak level as fraction', () {
@@ -518,7 +517,8 @@ Statistics
     });
 
     test('isFullyVerified: empty tracks → true', () {
-      const unknown = 'X Lossless Decoder version 1.0\n\nXLD extraction logfile from 2026-01-01\n\nUsed drive : Drive A\n';
+      const unknown =
+          'X Lossless Decoder version 1.0\n\nXLD extraction logfile from 2026-01-01\n\nUsed drive : Drive A\n';
       final log = parseRipLog(unknown);
       expect(isFullyVerified(log), isTrue);
     });
@@ -631,12 +631,9 @@ Track  1
 
     test('mixed line endings → parsed correctly', () {
       // Mix CRLF in header, LF in tracks
-      final mixed = _eacMinimal
-          .split('\n')
-          .take(10)
-          .map((l) => '$l\r\n')
-          .join() +
-          _eacMinimal.split('\n').skip(10).join('\n');
+      final mixed =
+          _eacMinimal.split('\n').take(10).map((l) => '$l\r\n').join() +
+              _eacMinimal.split('\n').skip(10).join('\n');
       expect(() => parseRipLog(mixed), returnsNormally);
     });
   });
@@ -701,8 +698,7 @@ Track  1
   // -------------------------------------------------------------------------
   group('File I/O integration', () {
     test('parseRipLogFile reads EAC log from disk', () async {
-      final path =
-          '${Directory.current.path}/test/fixtures/eac_sample.log';
+      final path = '${Directory.current.path}/test/fixtures/eac_sample.log';
       if (!File(path).existsSync()) {
         // Skip if fixture is not available in this environment.
         return;
@@ -713,8 +709,7 @@ Track  1
     });
 
     test('parseRipLogFile reads XLD log from disk', () async {
-      final path =
-          '${Directory.current.path}/test/fixtures/xld_sample.log';
+      final path = '${Directory.current.path}/test/fixtures/xld_sample.log';
       if (!File(path).existsSync()) {
         return;
       }
@@ -749,8 +744,7 @@ Track  1
   // -------------------------------------------------------------------------
   group('Real-world fixture logs', () {
     test('full EAC fixture: multi-track, mixed AR results', () {
-      final path =
-          '${Directory.current.path}/test/fixtures/eac_sample.log';
+      final path = '${Directory.current.path}/test/fixtures/eac_sample.log';
       if (!File(path).existsSync()) return;
       final content = File(path).readAsStringSync();
       final log = parseRipLog(content);
@@ -759,8 +753,7 @@ Track  1
     });
 
     test('full XLD fixture: multi-track, statistics blocks', () {
-      final path =
-          '${Directory.current.path}/test/fixtures/xld_sample.log';
+      final path = '${Directory.current.path}/test/fixtures/xld_sample.log';
       if (!File(path).existsSync()) return;
       final content = File(path).readAsStringSync();
       final log = parseRipLog(content);
@@ -856,8 +849,7 @@ Track  1
     });
 
     test('eac_sample.log fixture Track 1 has v2 signature A1B2C3D4', () {
-      final path =
-          '${Directory.current.path}/test/fixtures/eac_sample.log';
+      final path = '${Directory.current.path}/test/fixtures/eac_sample.log';
       if (!File(path).existsSync()) return;
       final log = parseRipLog(File(path).readAsStringSync());
       expect(log.tracks[0].accurateRipCrcV2, 'A1B2C3D4');
@@ -1022,8 +1014,7 @@ CRC32 hash : AABBCCDD
         () async {
       final tmpDir = await Directory.systemTemp.createTemp('riplog_bad_');
       final tmpFile = File('${tmpDir.path}/bad.log');
-      await tmpFile.writeAsBytes(
-          List<int>.generate(1024, (i) => i % 256));
+      await tmpFile.writeAsBytes(List<int>.generate(1024, (i) => i % 256));
       try {
         await expectLater(
           parseRipLogFile(tmpFile.path),

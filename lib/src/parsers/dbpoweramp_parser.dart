@@ -1,7 +1,7 @@
 import '../models.dart';
 
-final _reVersion =
-    RegExp(r'dBpoweramp.*?(?:Release|Reference)?\s*([\d.]+)', caseSensitive: false);
+final _reVersion = RegExp(r'dBpoweramp.*?(?:Release|Reference)?\s*([\d.]+)',
+    caseSensitive: false);
 
 /// Parse a dBpoweramp log. Currently a stub: identifies the format and extracts
 /// the tool version, but does not yet parse tracks. Full parser pending a

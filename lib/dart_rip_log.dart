@@ -30,4 +30,5 @@ library dart_rip_log;
 export 'src/models.dart';
 export 'src/parser.dart' show parseRipLog, detectLogFormat;
 export 'src/file_reader.dart' show parseRipLogFile;
-export 'src/convenience.dart' show isFullyVerified, tracksWithErrors, tracksWithArMismatch, toJson;
+export 'src/convenience.dart'
+    show isFullyVerified, tracksWithErrors, tracksWithArMismatch, toJson;

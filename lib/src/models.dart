@@ -104,10 +104,10 @@ class RipLogTrack {
   /// Output filename (may include a path).
   final String? filename;
 
-  /// Peak level as a fraction in the range [0.0, 1.0].
+  /// Peak level as a fraction in the range 0.0 to 1.0.
   final double? peakLevel;
 
-  /// Track extraction quality as a fraction in the range [0.0, 1.0].
+  /// Track extraction quality as a fraction in the range 0.0 to 1.0.
   final double? trackQuality;
 
   /// Copy CRC-32 hex string (e.g. "882B01BE").
