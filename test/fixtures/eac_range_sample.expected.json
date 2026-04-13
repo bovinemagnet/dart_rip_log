@@ -37,5 +37,6 @@
     }
   ],
   "integrityHash": "99887766554433221100FFEEDDCCBBAA",
+  "testAndCopy": true,
   "errors": []
 }

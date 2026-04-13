@@ -16,6 +16,16 @@ final _reReadOffset =
 final _reGapStatus = RegExp(r'Gap status\s*:\s*(.+)', caseSensitive: false);
 final _reMediaType = RegExp(r'Media type\s*:\s*(.+)', caseSensitive: false);
 
+// AR summary block, e.g.
+//   AccurateRip Summary (DiscID: 001a2b3c-001e4f5a-000c7b8d)
+// or
+//   AccurateRip DiscID: abcdef01-12345678-deadbeef
+final _reArDiscId = RegExp(
+    r'AccurateRip\s+(?:Summary\s*\(\s*)?DiscID\s*:\s*([0-9A-Fa-f-]+)',
+    caseSensitive: false);
+final _reArSubmissions =
+    RegExp(r'Total submissions?\s*:\s*(\d+)', caseSensitive: false);
+
 // ---------------------------------------------------------------------------
 // Track-section regex
 // ---------------------------------------------------------------------------
@@ -67,7 +77,22 @@ RipLog parseXld(String content) {
   int? readOffset;
   String? gapHandling;
   String? mediaType;
+  String? arDiscId;
+  int? arTotalSubmissions;
   final parsingErrors = <String>[];
+
+  // AR summary lines can appear anywhere — scan all lines.
+  for (final line in lines) {
+    final trimmed = line.trim();
+    if (arDiscId == null) {
+      final m = _reArDiscId.firstMatch(trimmed);
+      if (m != null) arDiscId = m.group(1);
+    }
+    if (arTotalSubmissions == null) {
+      final m = _reArSubmissions.firstMatch(trimmed);
+      if (m != null) arTotalSubmissions = int.tryParse(m.group(1)!);
+    }
+  }
 
   // Split into header + track sections.
   final trackSections = <List<String>>[];
@@ -156,6 +181,8 @@ RipLog parseXld(String content) {
     mediaType: mediaType,
     tracks: tracks,
     errors: parsingErrors,
+    accurateRipDiscId: arDiscId,
+    accurateRipTotalSubmissions: arTotalSubmissions,
   );
 }
 

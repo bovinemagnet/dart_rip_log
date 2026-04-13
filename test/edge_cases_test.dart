@@ -173,8 +173,7 @@ Track  1
       expect(t.copyCrc, 'DEADBEEF');
     });
 
-    test('non-English month in date → extractionDate null (known limitation)',
-        () {
+    test('German month name in date is parsed', () {
       const log = '''
 Exact Audio Copy V1.6 from 23. October 2019
 
@@ -188,11 +187,29 @@ Track  1
      Copy OK
 ''';
       final r = parseRipLog(log);
-      expect(r.logFormat, RipLogFormat.eac);
-      expect(r.extractionDate, isNull,
-          reason: 'German month names are not yet understood; the rest of the '
-              'log still parses.');
-      expect(r.tracks, hasLength(1));
+      expect(r.extractionDate, DateTime(2026, 10, 15));
+    });
+
+    test('French month name in date is parsed', () {
+      const log = '''
+Exact Audio Copy V1.6 from 23. October 2019
+
+EAC extraction logfile from 3. Octobre 2026
+
+Used drive : Some Drive
+''';
+      expect(parseRipLog(log).extractionDate, DateTime(2026, 10, 3));
+    });
+
+    test('Spanish month name in date is parsed', () {
+      const log = '''
+Exact Audio Copy V1.6 from 23. October 2019
+
+EAC extraction logfile from 7. Diciembre 2026
+
+Used drive : Some Drive
+''';
+      expect(parseRipLog(log).extractionDate, DateTime(2026, 12, 7));
     });
 
     test('AR confidence with multi-digit number', () {
@@ -214,6 +231,52 @@ Track  1
       expect(t.accurateRipConfidence, 142);
     });
 
+    test('testAndCopy true when any track has a test CRC', () {
+      const log = '''
+Exact Audio Copy V1.6 from 23. October 2019
+
+EAC extraction logfile from 15. March 2026
+
+Used drive : Some Drive
+
+Track  1
+
+     Filename C:\\x.flac
+     Test CRC DEADBEEF
+     Copy CRC DEADBEEF
+     Copy OK
+''';
+      expect(parseRipLog(log).testAndCopy, isTrue);
+    });
+
+    test('testAndCopy false when tracks exist but no test CRC', () {
+      const log = '''
+Exact Audio Copy V1.6 from 23. October 2019
+
+EAC extraction logfile from 15. March 2026
+
+Used drive : Some Drive
+
+Track  1
+
+     Filename C:\\x.flac
+     Copy CRC DEADBEEF
+     Copy OK
+''';
+      expect(parseRipLog(log).testAndCopy, isFalse);
+    });
+
+    test('testAndCopy null when no tracks parsed', () {
+      const log = '''
+Exact Audio Copy V1.6 from 23. October 2019
+
+EAC extraction logfile from 15. March 2026
+
+Used drive : Some Drive
+''';
+      expect(parseRipLog(log).testAndCopy, isNull);
+    });
+
     test('negative read offset captured', () {
       const log = '''
 Exact Audio Copy V1.6 from 23. October 2019
@@ -225,6 +288,54 @@ Used drive : Some Drive
 Read offset correction                      : -48
 ''';
       expect(parseRipLog(log).readOffset, -48);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // XLD AccurateRip summary block
+  // -------------------------------------------------------------------------
+  group('XLD AccurateRip summary', () {
+    test('DiscID on "AccurateRip Summary" line is captured', () {
+      const log = '''
+X Lossless Decoder version 20230916 (153.8)
+
+XLD extraction logfile from 2026-01-01 00:00:00 +0900
+
+Used drive : Some Drive
+
+AccurateRip Summary (DiscID: 001a2b3c-001e4f5a-000c7b8d)
+  Track 01 : OK (confidence 12)
+  Total submissions: 42
+
+Track 01
+Filename : /a.flac
+CRC32 hash               : AAAAAAAA
+->Accurately ripped (v1+v2, confidence 12/12)
+Statistics
+ Read error : 0
+ Peak level : 50.0 %
+ Track quality : 99.0 %
+''';
+      final r = parseRipLog(log);
+      expect(r.accurateRipDiscId, '001a2b3c-001e4f5a-000c7b8d');
+      expect(r.accurateRipTotalSubmissions, 42);
+    });
+
+    test('Missing AR summary → null disc ID and submissions', () {
+      const log = '''
+X Lossless Decoder version 20230916 (153.8)
+
+XLD extraction logfile from 2026-01-01 00:00:00 +0900
+
+Used drive : Some Drive
+
+Track 01
+Filename : /a.flac
+CRC32 hash : AAAAAAAA
+''';
+      final r = parseRipLog(log);
+      expect(r.accurateRipDiscId, isNull);
+      expect(r.accurateRipTotalSubmissions, isNull);
     });
   });
 

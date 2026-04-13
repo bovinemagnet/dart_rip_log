@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.0.4
+
+- EAC: parse localised month names in the extraction date. Coverage for
+  English, German, French, Spanish, Italian, Dutch, and Portuguese.
+- `RipLog.testAndCopy` — new field, derived from the presence of per-track
+  `Test CRC` lines. `null` when no tracks were parsed, otherwise `true`
+  if any track recorded a test CRC (test + copy mode) or `false`
+  (copy-only mode).
+- `RipLog.accurateRipDiscId` and `RipLog.accurateRipTotalSubmissions` —
+  new fields populated from XLD's `AccurateRip Summary` / `DiscID:` /
+  `Total submissions:` lines. Serialised in the JSON output when present.
+- 178 tests (7 new covering localised dates, test+copy derivation, and
+  the AR summary block).
+
 ## 0.0.3
 
 - Added `fromJson` constructors on `RipLog`, `RipLogTrack`, `TrackErrors`,

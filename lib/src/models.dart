@@ -349,6 +349,18 @@ class RipLog {
   /// Any parsing warnings accumulated during parsing.
   final List<String> errors;
 
+  /// Whether the rip was performed in "test and copy" mode (both a test
+  /// pass and a copy pass). `null` when the log does not indicate a mode.
+  ///
+  /// For EAC, derived from the presence of per-track `Test CRC` lines.
+  final bool? testAndCopy;
+
+  /// AccurateRip disc identifier, when the log includes one (e.g. XLD).
+  final String? accurateRipDiscId;
+
+  /// Total AccurateRip submissions recorded for this disc, when present.
+  final int? accurateRipTotalSubmissions;
+
   const RipLog({
     required this.logFormat,
     this.toolVersion,
@@ -363,6 +375,9 @@ class RipLog {
     this.accurateRipSummary,
     this.integrityHash,
     List<String>? errors,
+    this.testAndCopy,
+    this.accurateRipDiscId,
+    this.accurateRipTotalSubmissions,
   })  : tracks = tracks ?? const [],
         errors = errors ?? const [];
 
@@ -395,6 +410,10 @@ class RipLog {
         accurateRipSummary: json['accurateRipSummary'] as String?,
         integrityHash: json['integrityHash'] as String?,
         errors: (json['errors'] as List?)?.cast<String>() ?? const [],
+        testAndCopy: json['testAndCopy'] as bool?,
+        accurateRipDiscId: json['accurateRipDiscId'] as String?,
+        accurateRipTotalSubmissions:
+            json['accurateRipTotalSubmissions'] as int?,
       );
 
   /// Convert to a JSON-compatible map.
@@ -413,6 +432,10 @@ class RipLog {
         if (accurateRipSummary != null)
           'accurateRipSummary': accurateRipSummary,
         if (integrityHash != null) 'integrityHash': integrityHash,
+        if (testAndCopy != null) 'testAndCopy': testAndCopy,
+        if (accurateRipDiscId != null) 'accurateRipDiscId': accurateRipDiscId,
+        if (accurateRipTotalSubmissions != null)
+          'accurateRipTotalSubmissions': accurateRipTotalSubmissions,
         'errors': errors,
       };
 
@@ -432,6 +455,9 @@ class RipLog {
           _listEquals(other.tracks, tracks) &&
           other.accurateRipSummary == accurateRipSummary &&
           other.integrityHash == integrityHash &&
+          other.testAndCopy == testAndCopy &&
+          other.accurateRipDiscId == accurateRipDiscId &&
+          other.accurateRipTotalSubmissions == accurateRipTotalSubmissions &&
           _listEquals(other.errors, errors));
 
   @override
@@ -448,6 +474,9 @@ class RipLog {
         Object.hashAll(tracks),
         accurateRipSummary,
         integrityHash,
+        testAndCopy,
+        accurateRipDiscId,
+        accurateRipTotalSubmissions,
         Object.hashAll(errors),
       );
 }

@@ -217,6 +217,13 @@ RipLog parseEac(String content) {
       ? DriveInfo(name: driveName, readOffset: readOffset)
       : null;
 
+  // Test-and-copy is derived: true if any track reported a test CRC,
+  // false if there are tracks but none did. Null when there are no tracks.
+  bool? testAndCopy;
+  if (tracks.isNotEmpty) {
+    testAndCopy = tracks.any((t) => t.testCrc != null);
+  }
+
   return RipLog(
     logFormat: RipLogFormat.eac,
     toolVersion: toolVersion,
@@ -231,6 +238,7 @@ RipLog parseEac(String content) {
     accurateRipSummary: arSummary,
     integrityHash: integrityHash,
     errors: parsingErrors,
+    testAndCopy: testAndCopy,
   );
 }
 
@@ -416,20 +424,33 @@ RipLogTrack? _parseTrackSection(List<String> lines, List<String> parsingErrors,
   );
 }
 
-// EAC date format: "15. March 2026"
-final _monthNames = {
-  'january': 1,
-  'february': 2,
-  'march': 3,
-  'april': 4,
-  'may': 5,
-  'june': 6,
-  'july': 7,
-  'august': 8,
-  'september': 9,
-  'october': 10,
-  'november': 11,
-  'december': 12,
+// EAC date format: "15. March 2026". Non-English EAC builds emit the same
+// shape with localised month names — we accept each language's full name.
+final _monthNames = <String, int>{
+  // English
+  'january': 1, 'february': 2, 'march': 3, 'april': 4, 'may': 5,
+  'june': 6, 'july': 7, 'august': 8, 'september': 9, 'october': 10,
+  'november': 11, 'december': 12,
+  // German
+  'januar': 1, 'februar': 2, 'märz': 3, 'maerz': 3, 'mai': 5,
+  'juni': 6, 'juli': 7, 'oktober': 10, 'dezember': 12,
+  // French
+  'janvier': 1, 'février': 2, 'fevrier': 2, 'mars': 3, 'avril': 4,
+  'juin': 6, 'juillet': 7, 'août': 8, 'aout': 8, 'septembre': 9,
+  'octobre': 10, 'novembre': 11, 'décembre': 12, 'decembre': 12,
+  // Spanish
+  'enero': 1, 'febrero': 2, 'marzo': 3, 'abril': 4, 'mayo': 5,
+  'junio': 6, 'julio': 7, 'agosto': 8, 'septiembre': 9, 'setiembre': 9,
+  'octubre': 10, 'noviembre': 11, 'diciembre': 12,
+  // Italian
+  'gennaio': 1, 'febbraio': 2, 'aprile': 4, 'maggio': 5, 'giugno': 6,
+  'luglio': 7, 'settembre': 9, 'ottobre': 10, 'dicembre': 12,
+  // Dutch
+  'januari': 1, 'februari': 2, 'maart': 3, 'augustus': 8,
+  // Portuguese
+  'janeiro': 1, 'fevereiro': 2, 'março': 3, 'marco': 3, 'maio': 5,
+  'junho': 6, 'julho': 7, 'setembro': 9, 'outubro': 10, 'novembro': 11,
+  'dezembro': 12,
 };
 
 DateTime? _parseEacDate(String? raw) {
