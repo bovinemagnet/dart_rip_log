@@ -89,5 +89,6 @@
   "accurateRipSummary": "All tracks accurately ripped",
   "integrityHash": "ABCDEF1234567890ABCDEF1234567890",
   "testAndCopy": true,
+  "quality": "mismatches",
   "errors": []
 }

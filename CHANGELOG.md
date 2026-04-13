@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.1.0
+
+- Aggregate quality on `RipLog.quality` — a single
+  [`RipLogQuality`](https://pub.dev/documentation/dart_rip_log/latest/)
+  value (`allVerified`, `partiallyVerified`, `mismatches`, `errors`,
+  `unknown`) derived from the track list with a documented precedence.
+  Also emitted under the `quality` key in the JSON output — useful for
+  dashboards.
+- Lineage metadata via new `LogSource` class (byte size, line count,
+  parser name, UTC parse timestamp) attached as `RipLog.source` when
+  parsing through `parseRipLogFile`. `RipLog.withSource(...)` returns
+  a copy with a different source. `compareRipLogs` ignores `source`
+  since its wall-clock timestamp is not a rip property.
+- Track timing fields on `RipLogTrack`: `startSector`,
+  `lengthSectors`, `durationSeconds`. Nullable, omitted from JSON
+  when absent, tracked by `compareRipLogs`.
+- All new fields fully covered by equality, hash, `fromJson`, and
+  golden tests. Total suite: 205 tests.
+
+### Deferred to `0.1.x parsers` milestone
+
+Full parsers for whipper (#2), CUERipper (#3), and dBpoweramp (#4)
+still require real-world sample logs. Detection and stubs remain in
+place. Please open an issue on GitHub with a sample log to unblock
+these.
+
 ## 0.0.5
 
 - CLI: `--format ndjson` — streaming-friendly one-JSON-object-per-line

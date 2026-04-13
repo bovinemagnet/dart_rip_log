@@ -16,6 +16,85 @@ enum AccurateRipStatus {
   notChecked,
 }
 
+/// Aggregate summary of a whole [RipLog]'s quality.
+///
+/// Precedence (most severe first): [errors] > [mismatches] >
+/// [partiallyVerified] > [allVerified] > [unknown].
+enum RipLogQuality {
+  /// Every track is AccurateRip-verified and reports zero track errors.
+  allVerified,
+
+  /// No mismatches or errors, but at least one track has no AccurateRip
+  /// verification (e.g. not in the database or not checked).
+  partiallyVerified,
+
+  /// At least one track failed AccurateRip verification.
+  mismatches,
+
+  /// At least one track reports non-zero error counts (reads, jitter,
+  /// damaged sectors, etc.). Wins over [mismatches] because it indicates
+  /// actual data integrity problems, not just absence of database
+  /// confirmation.
+  errors,
+
+  /// The log contains no tracks, or could not be parsed.
+  unknown,
+}
+
+/// Lineage / provenance metadata for a parsed [RipLog].
+///
+/// Describes *how* a [RipLog] came into being — the raw log's size, its
+/// line count, which parser produced it, and when. Useful for debugging
+/// and telemetry. Not derived from the log content.
+class LogSource {
+  /// Size of the raw log content in bytes.
+  final int byteSize;
+
+  /// Number of lines in the raw log content.
+  final int lineCount;
+
+  /// Name of the parser that produced the [RipLog] (e.g. `"eac"`, `"xld"`).
+  final String parserName;
+
+  /// When parsing occurred.
+  final DateTime parsedAt;
+
+  const LogSource({
+    required this.byteSize,
+    required this.lineCount,
+    required this.parserName,
+    required this.parsedAt,
+  });
+
+  /// Reconstruct a [LogSource] from its JSON form.
+  factory LogSource.fromJson(Map<String, dynamic> json) => LogSource(
+        byteSize: json['byteSize'] as int,
+        lineCount: json['lineCount'] as int,
+        parserName: json['parserName'] as String,
+        parsedAt: DateTime.parse(json['parsedAt'] as String),
+      );
+
+  /// Convert to a JSON-compatible map.
+  Map<String, dynamic> toJson() => {
+        'byteSize': byteSize,
+        'lineCount': lineCount,
+        'parserName': parserName,
+        'parsedAt': parsedAt.toIso8601String(),
+      };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LogSource &&
+          other.byteSize == byteSize &&
+          other.lineCount == lineCount &&
+          other.parserName == parserName &&
+          other.parsedAt == parsedAt);
+
+  @override
+  int get hashCode => Object.hash(byteSize, lineCount, parserName, parsedAt);
+}
+
 T _enumByName<T extends Enum>(List<T> values, Object? name, T fallback) {
   if (name is! String) return fallback;
   for (final v in values) {
@@ -217,6 +296,15 @@ class RipLogTrack {
   /// Which tool produced this track entry.
   final RipLogFormat logFormat;
 
+  /// Start sector (LBA), if reported. CD audio sectors are 1/75 s each.
+  final int? startSector;
+
+  /// Length in sectors, if reported.
+  final int? lengthSectors;
+
+  /// Track duration in seconds, if reported or derivable from sector length.
+  final double? durationSeconds;
+
   const RipLogTrack({
     required this.trackNumber,
     this.filename,
@@ -231,6 +319,9 @@ class RipLogTrack {
     this.copyOk = false,
     TrackErrors? errors,
     this.logFormat = RipLogFormat.unknown,
+    this.startSector,
+    this.lengthSectors,
+    this.durationSeconds,
   }) : errors = errors ?? const TrackErrors();
 
   /// Reconstruct a [RipLogTrack] from its JSON form.
@@ -252,6 +343,9 @@ class RipLogTrack {
             : const TrackErrors(),
         logFormat: _enumByName(
             RipLogFormat.values, json['logFormat'], RipLogFormat.unknown),
+        startSector: json['startSector'] as int?,
+        lengthSectors: json['lengthSectors'] as int?,
+        durationSeconds: (json['durationSeconds'] as num?)?.toDouble(),
       );
 
   /// Convert to a JSON-compatible map.
@@ -270,6 +364,9 @@ class RipLogTrack {
         'copyOk': copyOk,
         'errors': errors.toJson(),
         'logFormat': logFormat.name,
+        if (startSector != null) 'startSector': startSector,
+        if (lengthSectors != null) 'lengthSectors': lengthSectors,
+        if (durationSeconds != null) 'durationSeconds': durationSeconds,
       };
 
   @override
@@ -288,7 +385,10 @@ class RipLogTrack {
           other.accurateRipConfidence == accurateRipConfidence &&
           other.copyOk == copyOk &&
           other.errors == errors &&
-          other.logFormat == logFormat);
+          other.logFormat == logFormat &&
+          other.startSector == startSector &&
+          other.lengthSectors == lengthSectors &&
+          other.durationSeconds == durationSeconds);
 
   @override
   int get hashCode => Object.hash(
@@ -305,6 +405,9 @@ class RipLogTrack {
         copyOk,
         errors,
         logFormat,
+        startSector,
+        lengthSectors,
+        durationSeconds,
       );
 }
 
@@ -361,6 +464,11 @@ class RipLog {
   /// Total AccurateRip submissions recorded for this disc, when present.
   final int? accurateRipTotalSubmissions;
 
+  /// Lineage / provenance metadata for this parse. Populated by
+  /// [parseRipLogFile]; `null` when the log was parsed from a string
+  /// unless the caller attached one explicitly.
+  final LogSource? source;
+
   const RipLog({
     required this.logFormat,
     this.toolVersion,
@@ -378,8 +486,46 @@ class RipLog {
     this.testAndCopy,
     this.accurateRipDiscId,
     this.accurateRipTotalSubmissions,
+    this.source,
   })  : tracks = tracks ?? const [],
         errors = errors ?? const [];
+
+  /// Aggregate quality of this rip, derived from the track list.
+  ///
+  /// See [RipLogQuality] for the precedence rules.
+  RipLogQuality get quality {
+    if (tracks.isEmpty) return RipLogQuality.unknown;
+    if (tracks.any((t) => t.errors.hasErrors)) return RipLogQuality.errors;
+    if (tracks.any((t) => t.accurateRipStatus == AccurateRipStatus.mismatch)) {
+      return RipLogQuality.mismatches;
+    }
+    if (tracks
+        .every((t) => t.accurateRipStatus == AccurateRipStatus.verified)) {
+      return RipLogQuality.allVerified;
+    }
+    return RipLogQuality.partiallyVerified;
+  }
+
+  /// Return a copy of this [RipLog] with a different [source] attached.
+  RipLog withSource(LogSource? source) => RipLog(
+        logFormat: logFormat,
+        toolVersion: toolVersion,
+        extractionDate: extractionDate,
+        drive: drive,
+        readMode: readMode,
+        readOffset: readOffset,
+        overread: overread,
+        gapHandling: gapHandling,
+        mediaType: mediaType,
+        tracks: tracks,
+        accurateRipSummary: accurateRipSummary,
+        integrityHash: integrityHash,
+        errors: errors,
+        testAndCopy: testAndCopy,
+        accurateRipDiscId: accurateRipDiscId,
+        accurateRipTotalSubmissions: accurateRipTotalSubmissions,
+        source: source,
+      );
 
   /// Reconstruct a [RipLog] from its JSON form (as produced by [toJson]).
   ///
@@ -414,6 +560,9 @@ class RipLog {
         accurateRipDiscId: json['accurateRipDiscId'] as String?,
         accurateRipTotalSubmissions:
             json['accurateRipTotalSubmissions'] as int?,
+        source: json['source'] is Map<String, dynamic>
+            ? LogSource.fromJson(json['source'] as Map<String, dynamic>)
+            : null,
       );
 
   /// Convert to a JSON-compatible map.
@@ -436,6 +585,8 @@ class RipLog {
         if (accurateRipDiscId != null) 'accurateRipDiscId': accurateRipDiscId,
         if (accurateRipTotalSubmissions != null)
           'accurateRipTotalSubmissions': accurateRipTotalSubmissions,
+        'quality': quality.name,
+        if (source != null) 'source': source!.toJson(),
         'errors': errors,
       };
 
@@ -458,6 +609,7 @@ class RipLog {
           other.testAndCopy == testAndCopy &&
           other.accurateRipDiscId == accurateRipDiscId &&
           other.accurateRipTotalSubmissions == accurateRipTotalSubmissions &&
+          other.source == source &&
           _listEquals(other.errors, errors));
 
   @override
@@ -477,6 +629,7 @@ class RipLog {
         testAndCopy,
         accurateRipDiscId,
         accurateRipTotalSubmissions,
+        source,
         Object.hashAll(errors),
       );
 }

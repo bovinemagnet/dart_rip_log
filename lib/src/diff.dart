@@ -81,7 +81,9 @@ class RipLogDiff {
 ///
 /// Parser-level warnings in [RipLog.errors] are intentionally ignored so
 /// that a re-parse of the same log on a newer library version does not
-/// show as a difference.
+/// show as a difference. [RipLog.source] is also ignored — it is
+/// lineage metadata (with a wall-clock timestamp) that has nothing to
+/// do with the rip itself.
 RipLogDiff compareRipLogs(RipLog left, RipLog right) {
   final entries = <RipLogDiffEntry>[];
 
@@ -160,6 +162,9 @@ void _diffTrack(
   d('accurateRipCrcV2', a.accurateRipCrcV2, b.accurateRipCrcV2);
   d('accurateRipConfidence', a.accurateRipConfidence, b.accurateRipConfidence);
   d('copyOk', a.copyOk, b.copyOk);
+  d('startSector', a.startSector, b.startSector);
+  d('lengthSectors', a.lengthSectors, b.lengthSectors);
+  d('durationSeconds', a.durationSeconds, b.durationSeconds);
 
   _diffTrackErrors('$base.errors', a.errors, b.errors, entries);
 }

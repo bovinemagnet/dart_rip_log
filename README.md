@@ -138,14 +138,20 @@ Colour output respects `NO_COLOR` and `stdout.hasTerminal` by default.
 
 ## Data model
 
-| Class                  | Purpose                                         |
-| ---------------------- | ----------------------------------------------- |
-| `RipLog`               | Top-level result — header fields + tracks.      |
-| `RipLogTrack`          | Per-track quality data (unified across formats).|
-| `TrackErrors`          | Per-track error counters.                       |
-| `DriveInfo`            | Optical drive name, read offset, adapter.       |
-| `RipLogFormat` (enum)  | `eac`, `xld`, `cueRipper`, `whipper`, `dbPoweramp`, `unknown`. |
-| `AccurateRipStatus` (enum) | `verified`, `mismatch`, `notInDatabase`, `notChecked`. |
+| Class                     | Purpose                                         |
+| ------------------------- | ----------------------------------------------- |
+| `RipLog`                  | Top-level result — header fields + tracks.      |
+| `RipLogTrack`             | Per-track quality data (unified across formats).|
+| `TrackErrors`             | Per-track error counters.                       |
+| `DriveInfo`               | Optical drive name, read offset, adapter.       |
+| `LogSource`               | Lineage metadata: byte size, line count, parser, timestamp. |
+| `RipLogFormat` (enum)     | `eac`, `xld`, `cueRipper`, `whipper`, `dbPoweramp`, `unknown`. |
+| `AccurateRipStatus` (enum)| `verified`, `mismatch`, `notInDatabase`, `notChecked`. |
+| `RipLogQuality` (enum)    | `allVerified`, `partiallyVerified`, `mismatches`, `errors`, `unknown`. |
+
+`RipLog.quality` returns a single-value summary of the whole log. Precedence
+(most severe first): `errors` > `mismatches` > `partiallyVerified` >
+`allVerified` > `unknown`.
 
 ## Error tolerance
 

@@ -61,5 +61,6 @@
       "logFormat": "xld"
     }
   ],
+  "quality": "errors",
   "errors": []
 }

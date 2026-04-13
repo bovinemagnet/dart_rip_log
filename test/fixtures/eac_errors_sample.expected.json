@@ -64,5 +64,6 @@
   ],
   "integrityHash": "0011223344556677889900AABBCCDDEEFF",
   "testAndCopy": true,
+  "quality": "errors",
   "errors": []
 }
