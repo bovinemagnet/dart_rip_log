@@ -193,6 +193,19 @@ per-track error statistics, line-ending tolerance, Unicode filenames
 (Latin accents, CJK, emoji), a 500-track performance smoke, CLI behaviour,
 and JSON-shape golden tests.
 
+## Benchmarking
+
+```sh
+dart run benchmark/main.dart            # full measurement (~20 s)
+dart run benchmark/main.dart --smoke    # 1 iter per case (~1 s, used in CI)
+```
+
+Measures `detectLogFormat`, `parseRipLog`, and `toJson` against EAC small,
+XLD small, and a checked-in 500-track EAC fixture. Prints a grouped table
+with per-track timings for the 500-track case. Results are print-only — no
+baseline file, no CI threshold — so compare runs manually when evaluating
+a parser change.
+
 ## Contributing
 
 Issues and pull requests welcome on
