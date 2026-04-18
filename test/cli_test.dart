@@ -287,9 +287,9 @@ void main() {
           .split('\n')
           .where((l) => l.isNotEmpty)
           .toList();
-      // test/fixtures has 4 .log files: eac_sample, eac_errors_sample,
-      // eac_range_sample, xld_sample.
-      expect(lines, hasLength(4));
+      // test/fixtures has 5 .log files: eac_sample, eac_errors_sample,
+      // eac_range_sample, eac_500_track, xld_sample.
+      expect(lines, hasLength(5));
       expect(lines.every((l) => l.contains('.log\t')), isTrue);
     });
   });

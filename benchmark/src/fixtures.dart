@@ -8,7 +8,11 @@ class Fixtures {
   Fixtures._(this.eacSmall, this.xldSmall, this.eac500Track);
 
   /// Human-readable fixture names, stable and in table order.
-  static const List<String> names = ['eac_sample', 'xld_sample', 'eac_500_track'];
+  static const List<String> names = [
+    'eac_sample',
+    'xld_sample',
+    'eac_500_track'
+  ];
 
   /// Track count of the 500-track fixture. Used for the per-track column.
   static const int eac500TrackCount = 500;
