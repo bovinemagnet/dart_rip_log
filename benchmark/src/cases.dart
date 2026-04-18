@@ -21,8 +21,9 @@ class RipLogBenchmark extends BenchmarkBase {
 /// into [emitter]. Names follow the `<fixture>.<op>` convention expected
 /// by [TableScoreEmitter].
 ///
-/// `toJson` cases receive a parse result computed once at setup time, so
-/// they measure serialisation in isolation rather than parse+serialise.
+/// `toJson` cases receive a parse result captured by closure when
+/// [buildCases] runs, so they measure serialisation in isolation rather
+/// than parse+serialise.
 List<RipLogBenchmark> buildCases(Fixtures fixtures, ScoreEmitter emitter) {
   final cases = <RipLogBenchmark>[];
 

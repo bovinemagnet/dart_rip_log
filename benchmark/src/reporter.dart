@@ -17,7 +17,7 @@ class TableScoreEmitter implements ScoreEmitter {
   double? scoreFor(String testName) => _scores[testName];
 
   /// Render a grouped table: one row per fixture, columns per op, plus a
-  /// trailing `parse us/track` column populated only for fixtures listed
+  /// trailing `parse µs/track` column populated only for fixtures listed
   /// in [trackCountFor].
   String renderTable({
     required List<String> fixtures,
@@ -33,7 +33,7 @@ class TableScoreEmitter implements ScoreEmitter {
     final header = [
       'Fixture'.padRight(fixtureWidth),
       ...ops.map((o) => o.padLeft(colWidth)),
-      'parse us/track'.padLeft(perTrackWidth),
+      'parse µs/track'.padLeft(perTrackWidth),
     ].join('  ');
 
     final sep = [

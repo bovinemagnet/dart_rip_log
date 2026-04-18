@@ -197,7 +197,7 @@ and JSON-shape golden tests.
 
 ```sh
 dart run benchmark/main.dart            # full measurement (~20 s)
-dart run benchmark/main.dart --smoke    # 1 iter per case (~1 s, used in CI)
+dart run benchmark/main.dart --smoke    # 1 iter per case (~1 s; `dart test` exercises this path via test/benchmark_smoke_test.dart)
 ```
 
 Measures `detectLogFormat`, `parseRipLog`, and `toJson` against EAC small,
