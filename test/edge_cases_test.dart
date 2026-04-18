@@ -413,30 +413,11 @@ Statistics
   // -------------------------------------------------------------------------
   group('Performance', () {
     test('500-track EAC log parses in under 1 second', () {
-      final buf = StringBuffer()
-        ..writeln('Exact Audio Copy V1.6 from 23. October 2019')
-        ..writeln('')
-        ..writeln('EAC extraction logfile from 15. March 2026')
-        ..writeln('')
-        ..writeln('Used drive : Some Drive')
-        ..writeln('');
-      for (var i = 1; i <= 500; i++) {
-        buf
-          ..writeln('Track  $i')
-          ..writeln('')
-          ..writeln('     Filename C:\\track_$i.flac')
-          ..writeln('     Peak level 90.0 %')
-          ..writeln('     Track quality 99.9 %')
-          ..writeln(
-              '     Copy CRC ${i.toRadixString(16).padLeft(8, '0').toUpperCase()}')
-          ..writeln('     Accurately ripped (confidence 1)  [AAAAAAAA]')
-          ..writeln('     Copy OK')
-          ..writeln('');
-      }
-      buf.writeln('All tracks accurately ripped');
+      final content =
+          File('test/fixtures/eac_500_track.log').readAsStringSync();
 
       final sw = Stopwatch()..start();
-      final log = parseRipLog(buf.toString());
+      final log = parseRipLog(content);
       sw.stop();
 
       expect(log.tracks, hasLength(500));
