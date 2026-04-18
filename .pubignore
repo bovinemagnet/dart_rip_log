@@ -1,0 +1,4 @@
+# Workflow artefacts kept in the repo but excluded from the published package.
+docs/
+tool/
+benchmark/
