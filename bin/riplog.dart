@@ -3,7 +3,9 @@ import 'dart:io';
 
 import 'package:dart_rip_log/dart_rip_log.dart';
 
-const String _cliVersion = '0.0.5';
+/// Must match `version:` in pubspec.yaml — pinned by a test in
+/// `test/cli_test.dart` so the two cannot drift.
+const String _cliVersion = '0.1.1';
 
 enum _Filter { all, mismatch, errors, problems }
 
