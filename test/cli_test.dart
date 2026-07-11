@@ -292,5 +292,29 @@ void main() {
       expect(lines, hasLength(5));
       expect(lines.every((l) => l.contains('.log\t')), isTrue);
     });
+
+    test('--version matches the version in pubspec.yaml', () async {
+      final pubspec = File('pubspec.yaml').readAsStringSync();
+      final pubspecVersion =
+          RegExp(r'^version:\s*(\S+)', multiLine: true).firstMatch(pubspec);
+      expect(pubspecVersion, isNotNull,
+          reason: 'pubspec.yaml must declare a version');
+
+      final r = await run(['--version']);
+      expect(r.exitCode, 0);
+      expect(r.stdout.toString().trim(), 'riplog ${pubspecVersion!.group(1)}');
+    });
+
+    test('large JSON output is not truncated when piped', () async {
+      // exit() does not flush pending async stdout writes, so a big payload
+      // can be cut off. The 500-track fixture produces ~200 KB of JSON.
+      final r =
+          await run(['--format', 'json', 'test/fixtures/eac_500_track.log']);
+      final out = r.stdout.toString();
+      expect(out.length, greaterThan(64 * 1024),
+          reason: 'fixture should exceed a single pipe buffer');
+      final decoded = jsonDecode(out) as Map<String, dynamic>;
+      expect((decoded['tracks'] as List), hasLength(500));
+    });
   });
 }

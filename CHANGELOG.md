@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.1.1
+
+- `compareRipLogs` now diffs `testAndCopy`, `accurateRipDiscId`, and
+  `accurateRipTotalSubmissions` (#27). These fields arrived in 0.0.4,
+  after the differ was written, and were silently ignored — two logs
+  differing only in them compared as identical.
+- `riplog --version` reported `0.0.5` (#25). The constant is now pinned
+  to the pubspec version by a test so it cannot drift again.
+- README: install snippet was five releases behind, and the documented
+  JSON key lists omitted `mediaType`, `testAndCopy`, `quality`,
+  `accurateRipDiscId`, `accurateRipTotalSubmissions`, `source`,
+  `startSector`, `lengthSectors`, and `durationSeconds` (#28).
+- No API or JSON-shape changes. Total suite: 215 tests.
+
 ## 0.1.0
 
 - Aggregate quality on `RipLog.quality` — a single

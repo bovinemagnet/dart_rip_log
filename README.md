@@ -41,7 +41,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  dart_rip_log: ^0.0.1
+  dart_rip_log: ^0.1.1
 ```
 
 Then:
@@ -170,16 +170,22 @@ Calling `toJson(log)` (or `log.toJson()`) returns a stable, JSON-compatible
 the goldens. Top-level keys:
 
 ```
-logFormat, toolVersion, extractionDate, drive, readMode, readOffset,
+logFormat, toolVersion, extractionDate, drive{}, readMode, readOffset,
 overread, gapHandling, mediaType, tracks[], accurateRipSummary,
-integrityHash, errors[]
+integrityHash, testAndCopy, accurateRipDiscId, accurateRipTotalSubmissions,
+quality, source{}, errors[]
 ```
 
 Each track includes: `trackNumber, filename, peakLevel, trackQuality, copyCrc,
 testCrc, accurateRipStatus, accurateRipCrcV1, accurateRipCrcV2,
-accurateRipConfidence, copyOk, errors{}, logFormat`. Numeric peak/quality
-values are fractions in `[0.0, 1.0]`. Dates are ISO-8601 strings. Optional
-fields are omitted when null.
+accurateRipConfidence, copyOk, errors{}, logFormat, startSector,
+lengthSectors, durationSeconds`. Numeric peak/quality values are fractions in
+`[0.0, 1.0]`. Dates are ISO-8601 strings. Optional fields are omitted when
+null — so `quality`, `logFormat`, `tracks`, and `errors` are always present,
+while the rest appear only when the log supplied them.
+
+`source` (byte size, line count, parser name, parse timestamp) is populated
+only by `parseRipLogFile`, not by `parseRipLog`.
 
 ## Running the tests
 

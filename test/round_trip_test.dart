@@ -164,5 +164,44 @@ void main() {
       const b = RipLog(logFormat: RipLogFormat.eac, errors: ['warning B']);
       expect(compareRipLogs(a, b).isEmpty, isTrue);
     });
+
+    test('testAndCopy change reported', () {
+      const a = RipLog(logFormat: RipLogFormat.eac, testAndCopy: true);
+      const b = RipLog(logFormat: RipLogFormat.eac, testAndCopy: false);
+      final diff = compareRipLogs(a, b);
+      expect(diff.entries, hasLength(1));
+      expect(diff.entries.first.path, 'testAndCopy');
+      expect(diff.entries.first.kind, RipLogDiffKind.changed);
+      expect(diff.entries.first.left, true);
+      expect(diff.entries.first.right, false);
+    });
+
+    test('accurateRipDiscId change reported', () {
+      const a = RipLog(logFormat: RipLogFormat.xld, accurateRipDiscId: 'aaa');
+      const b = RipLog(logFormat: RipLogFormat.xld, accurateRipDiscId: 'bbb');
+      final diff = compareRipLogs(a, b);
+      expect(diff.entries, hasLength(1));
+      expect(diff.entries.first.path, 'accurateRipDiscId');
+      expect(diff.entries.first.kind, RipLogDiffKind.changed);
+    });
+
+    test('accurateRipTotalSubmissions change reported', () {
+      const a =
+          RipLog(logFormat: RipLogFormat.xld, accurateRipTotalSubmissions: 3);
+      const b =
+          RipLog(logFormat: RipLogFormat.xld, accurateRipTotalSubmissions: 9);
+      final diff = compareRipLogs(a, b);
+      expect(diff.entries, hasLength(1));
+      expect(diff.entries.first.path, 'accurateRipTotalSubmissions');
+      expect(diff.entries.first.left, 3);
+      expect(diff.entries.first.right, 9);
+    });
+
+    test('field present on one side only → added / removed', () {
+      const a = RipLog(logFormat: RipLogFormat.xld);
+      const b = RipLog(logFormat: RipLogFormat.xld, accurateRipDiscId: 'bbb');
+      expect(compareRipLogs(a, b).entries.first.kind, RipLogDiffKind.added);
+      expect(compareRipLogs(b, a).entries.first.kind, RipLogDiffKind.removed);
+    });
   });
 }

@@ -108,6 +108,10 @@ RipLogDiff compareRipLogs(RipLog left, RipLog right) {
   diff('mediaType', left.mediaType, right.mediaType);
   diff('accurateRipSummary', left.accurateRipSummary, right.accurateRipSummary);
   diff('integrityHash', left.integrityHash, right.integrityHash);
+  diff('testAndCopy', left.testAndCopy, right.testAndCopy);
+  diff('accurateRipDiscId', left.accurateRipDiscId, right.accurateRipDiscId);
+  diff('accurateRipTotalSubmissions', left.accurateRipTotalSubmissions,
+      right.accurateRipTotalSubmissions);
 
   final leftByNumber = {for (final t in left.tracks) t.trackNumber: t};
   final rightByNumber = {for (final t in right.tracks) t.trackNumber: t};
