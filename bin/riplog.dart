@@ -6,7 +6,7 @@ import 'package:dart_rip_log/src/encoding.dart';
 
 /// Must match `version:` in pubspec.yaml — pinned by a test in
 /// `test/cli_test.dart` so the two cannot drift.
-const String _cliVersion = '0.1.1';
+const String _cliVersion = '0.2.0';
 
 enum _Filter { all, mismatch, errors, problems }
 
