@@ -1,0 +1,104 @@
+CUERipper v2.2.6 Copyright (C) 2008-2025 Grigory Chudov
+
+EAC extraction logfile from 12. June 2025, 18:42
+
+Sample Artist / Sample Album
+
+Used drive  : HL-DT-ST DVDRAM GH24NSD1   Adapter: 1  ID: 0
+
+Read mode               : Secure
+Utilize accurate stream : Yes
+Defeat audio cache      : Yes
+Make use of C2 pointers : No
+
+Read offset correction                      : 6
+Overread into Lead-In and Lead-Out          : No
+Fill up missing offset samples with silence : Yes
+Delete leading and trailing silent blocks   : No
+Null samples used in CRC calculations       : Yes
+Used interface                              : Native Win32 interface for Win NT & 2000
+Gap handling                                : Appended to previous track
+
+Used output format : Internal WAV Routines
+Sample format      : 44.100 Hz; 16 Bit; Stereo
+
+
+TOC of the extracted CD
+
+     Track |   Start  |  Length  | Start sector | End sector
+    ---------------------------------------------------------
+        1  |  0:00.00 |  4:33.15 |         0    |    20489
+        2  |  4:33.15 |  3:58.60 |     20490    |    38399
+        3  |  8:32.00 |  5:12.00 |     38400    |    61799
+        4  | 13:44.00 |  4:05.40 |     61800    |    80214
+        5  | 17:49.40 |  6:21.33 |     80215    |   108822
+
+
+Track  1
+
+     Filename C:\Rips\Sample Artist\2019 - Sample Album\01 - Sample Artist - Track One.wav
+
+     Pre-gap length  0:00:02.00
+
+     Peak level 96.2 %
+     Track quality 100.0 %
+     Test CRC 2B055AD7
+     Copy CRC 2B055AD7
+     Accurately ripped (confidence 27)  [A1B2C3D4]
+     Copy OK
+
+Track  2
+
+     Filename C:\Rips\Sample Artist\2019 - Sample Album\02 - Sample Artist - Track Two.wav
+
+     Peak level 99.1 %
+     Track quality 100.0 %
+     Test CRC A9422446
+     Copy CRC A9422446
+     Accurately ripped (confidence 27)  [B2C3D4E5]
+     Copy OK
+
+Track  3
+
+     Filename C:\Rips\Sample Artist\2019 - Sample Album\03 - Sample Artist - Track Three.wav
+
+     Peak level 97.3 %
+     Track quality 100.0 %
+     Test CRC 813388C1
+     Copy CRC 813388C1
+     Cannot be verified as accurate (confidence 27)  [C3D4E5F6], AccurateRip returned [8A9B0C1D]
+     Copy OK
+
+Track  4
+
+     Filename C:\Rips\Sample Artist\2019 - Sample Album\04 - Sample Artist - Track Four.wav
+
+     Peak level 98.8 %
+     Track quality 100.0 %
+     Test CRC 0A1B09D5
+     Copy CRC 0A1B09D5
+     Track not present in AccurateRip database
+     Copy OK
+
+Track  5
+
+     Filename C:\Rips\Sample Artist\2019 - Sample Album\05 - Sample Artist - Track Five.wav
+
+     Pre-gap length  0:00:01.74
+
+     Peak level 96.6 %
+     Track quality 100.0 %
+     Test CRC 817C02FE
+     Copy CRC 817C02FE
+     Accurately ripped (confidence 27)  [E5F60718]
+     Copy OK
+
+
+ 3 track(s) accurately ripped
+ 1 track(s) not present in the AccurateRip database
+
+Some tracks could not be verified as accurate
+
+No errors occurred
+
+End of status report

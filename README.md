@@ -18,8 +18,8 @@ Zero runtime dependencies beyond the Dart SDK.
   - Header: tool version, extraction date, drive, read mode, read offset,
     overread, gap handling, media type.
   - Per track: filename, peak level, track quality, test/copy CRCs, Copy OK.
-  - AccurateRip: `verified` (with confidence, v1 CRC and optional v2 signature),
-    `mismatch`, `notInDatabase`.
+  - AccurateRip: `verified` (with confidence and CRC), `mismatch`,
+    `notInDatabase`.
   - Full error-statistics block (read / skip / edge jitter / atom jitter /
     drift / dropped bytes / duplicated bytes / inconsistency).
   - Footer: summary line and log checksum.
@@ -29,9 +29,11 @@ Zero runtime dependencies beyond the Dart SDK.
 - **whipper** — full parser for the YAML-style logs of whipper 0.8+ (and the
   plain-text 0.7 layout): header, TOC sectors, per-track test/copy CRCs,
   AccurateRip v1/v2 results, and the SHA-256 log hash.
-- **CUERipper**, **dBpoweramp** — format detection and scaffolded parsers
-  (tool version captured; full per-track parsing pending real-world sample
-  logs).
+- **CUERipper** — full parser for both log layouts: the default EAC-style
+  logs (parsed via the EAC parser, tagged as CUERipper) and the native
+  layout with its `AccurateRip summary` v1/v2 CRC table.
+- **dBpoweramp** — format detection and scaffolded parser (tool version
+  captured; full per-track parsing pending real-world sample logs).
 - Tolerant of malformed input: truncated files, garbled lines, CRLF/LF/mixed
   line endings, and missing fields return a best-effort `RipLog` rather than
   throwing.

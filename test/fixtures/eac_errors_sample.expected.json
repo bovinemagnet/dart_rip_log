@@ -63,7 +63,8 @@
       "logFormat": "eac"
     }
   ],
-  "integrityHash": "0011223344556677889900AABBCCDDEEFF",
+  "accurateRipSummary": "1 track(s) accurately ripped\n1 track(s) could not be verified as accurate\nSome tracks could not be verified as accurate",
+  "integrityHash": "0011223344556677889900AABBCCDDEE0011223344556677889900AABBCCDDEE",
   "testAndCopy": true,
   "quality": "errors",
   "errors": []

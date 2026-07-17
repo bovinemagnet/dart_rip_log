@@ -19,7 +19,7 @@ Track  1
      Track quality 99.9 %
      Test CRC 11112222
      Copy CRC 11112222
-     Accurately ripped (confidence 2)  [AABBCCDD]
+     Accurately ripped (confidence 2)  [AABBCCDD]  (AR v2)
      Copy OK
 
 
@@ -38,12 +38,17 @@ Track  2
      Dropped bytes error (maybe fixed)        : 5
      Duplicated bytes error (maybe fixed)     : 2
      Inconsistency in error sectors           : 1
-     Cannot be verified as accurate  [EEEEEEEE]
+     Cannot be verified as accurate (confidence 2)  [EEEEEEEE], AccurateRip returned [976E7B60]  (AR v2)
      Copy OK
 
+
+ 1 track(s) accurately ripped
+ 1 track(s) could not be verified as accurate
+
+Some tracks could not be verified as accurate
 
 There were errors
 
 End of status report
 
-==== Log checksum 0011223344556677889900AABBCCDDEEFF ====
+==== Log checksum 0011223344556677889900AABBCCDDEE0011223344556677889900AABBCCDDEE ====

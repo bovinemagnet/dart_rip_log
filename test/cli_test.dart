@@ -387,9 +387,14 @@ void main() {
           .split('\n')
           .where((l) => l.isNotEmpty)
           .toList();
-      // test/fixtures has 6 .log files: eac_sample, eac_errors_sample,
-      // eac_range_sample, eac_500_track, xld_sample, whipper_sample.
-      expect(lines, hasLength(6));
+      // One line per *.log fixture, however many are checked in.
+      final logCount = Directory('test/fixtures')
+          .listSync()
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.log'))
+          .length;
+      expect(lines, hasLength(logCount));
+      expect(logCount, greaterThan(0));
       expect(lines.every((l) => l.contains('.log\t')), isTrue);
     });
 
