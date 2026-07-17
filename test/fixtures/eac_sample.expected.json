@@ -21,7 +21,6 @@
       "testCrc": "882B01BE",
       "accurateRipStatus": "verified",
       "accurateRipCrcV1": "F4E2268A",
-      "accurateRipCrcV2": "A1B2C3D4",
       "accurateRipConfidence": 1,
       "copyOk": true,
       "errors": {
@@ -96,8 +95,8 @@
       "durationSeconds": 310.4
     }
   ],
-  "accurateRipSummary": "All tracks accurately ripped",
-  "integrityHash": "ABCDEF1234567890ABCDEF1234567890",
+  "accurateRipSummary": "1 track(s) accurately ripped\n1 track(s) could not be verified as accurate\nSome tracks could not be verified as accurate",
+  "integrityHash": "ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890",
   "testAndCopy": true,
   "quality": "mismatches",
   "errors": []

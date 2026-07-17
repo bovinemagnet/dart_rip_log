@@ -28,7 +28,7 @@ void main() {
       ..writeln('     Peak level 90.0 %')
       ..writeln('     Track quality 99.9 %')
       ..writeln('     Copy CRC $crc')
-      ..writeln('     Accurately ripped (confidence 1)  [AAAAAAAA]')
+      ..writeln('     Accurately ripped (confidence 1)  [AAAAAAAA]  (AR v2)')
       ..writeln('     Copy OK')
       ..writeln('');
   }

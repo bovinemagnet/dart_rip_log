@@ -37,7 +37,7 @@
       "logFormat": "eac"
     }
   ],
-  "integrityHash": "99887766554433221100FFEEDDCCBBAA",
+  "integrityHash": "99887766554433221100FFEEDDCCBBAA99887766554433221100FFEEDDCCBBAA",
   "testAndCopy": true,
   "quality": "partiallyVerified",
   "errors": []

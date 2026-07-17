@@ -41,7 +41,7 @@ Track  1
      Track quality 99.8 %
      Test CRC 882B01BE
      Copy CRC 882B01BE
-     Accurately ripped (confidence 1)  [F4E2268A]  (AR v2 signature: A1B2C3D4)
+     Accurately ripped (confidence 1)  [F4E2268A]  (AR v2)
      Copy OK
 
 
@@ -52,7 +52,7 @@ Track  2
      Peak level 75.0 %
      Track quality 100.0 %
      Copy CRC AABBCCDD
-     Cannot be verified as accurate  [12345678]
+     Cannot be verified as accurate (confidence 3)  [12345678], AccurateRip returned [BE82BF1E]  (AR v2)
      Copy OK
 
 
@@ -67,10 +67,14 @@ Track  3
      Copy OK
 
 
-All tracks accurately ripped
+ 1 track(s) accurately ripped
+ 1 track(s) could not be verified as accurate
+ 1 track(s) not present in the AccurateRip database
+
+Some tracks could not be verified as accurate
 
 No errors occurred
 
 End of status report
 
-==== Log checksum ABCDEF1234567890ABCDEF1234567890 ====
+==== Log checksum ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890 ====
