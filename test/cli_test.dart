@@ -144,6 +144,60 @@ void main() {
       expect(lines, hasLength(2));
     });
 
+    group('multi-file continue-on-error (#40)', () {
+      const missing = '/tmp/definitely-does-not-exist-riplog.log';
+
+      test('unreadable file is skipped, remaining files still emitted',
+          () async {
+        final r = await run([
+          missing,
+          'test/fixtures/eac_sample.log',
+          'test/fixtures/xld_sample.log',
+        ]);
+        expect(r.exitCode, 2);
+        expect(r.stderr.toString(), contains('Cannot read $missing'));
+        final decoded = jsonDecode(r.stdout.toString());
+        expect(decoded, isList);
+        expect((decoded as List), hasLength(2));
+        expect(decoded[0]['logFormat'], 'eac');
+        expect(decoded[1]['logFormat'], 'xld');
+      });
+
+      test('--quiet still emits one line per readable file', () async {
+        final r = await run([
+          '-q',
+          'test/fixtures/eac_sample.log',
+          missing,
+          'test/fixtures/xld_sample.log',
+        ]);
+        expect(r.exitCode, 2);
+        expect(r.stderr.toString(), contains('Cannot read $missing'));
+        final lines = r.stdout
+            .toString()
+            .trim()
+            .split('\n')
+            .where((l) => l.isNotEmpty)
+            .toList();
+        expect(lines, hasLength(2));
+      });
+
+      test('I/O error (2) takes precedence over quality failure (1)', () async {
+        final r = await run([
+          '-q',
+          'test/fixtures/eac_errors_sample.log', // quality failure → 1
+          missing, // I/O error → 2
+        ]);
+        expect(r.exitCode, 2);
+      });
+
+      test('single unreadable file still exits 2 with no stdout', () async {
+        final r = await run([missing]);
+        expect(r.exitCode, 2);
+        expect(r.stderr.toString(), contains('Cannot read'));
+        expect(r.stdout.toString(), isEmpty);
+      });
+    });
+
     test('multiple files with --format text are prefixed with # <path>',
         () async {
       final r = await run([

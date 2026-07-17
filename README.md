@@ -131,7 +131,10 @@ Exit-code policy is controlled by `--fail-on`:
 | `errors`    | any track error counts                          |
 | `never`     | never (always exits 0 on successful parse)      |
 
-`2` is always returned for bad arguments or I/O errors. With multiple files
+`2` is always returned for bad arguments or I/O errors. An unreadable file
+in a multi-file run is reported to stderr and skipped — remaining files are
+still processed and their results emitted, with exit code 2 at the end
+(I/O errors take precedence over quality failures). With multiple files
 the JSON output is an array (one entry per file); `ndjson` emits one object
 per line; `text` / `--summary` each file is prefixed with `# <path>`.
 Colour output respects `NO_COLOR` and `stdout.hasTerminal` by default.
