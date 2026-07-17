@@ -130,6 +130,59 @@ void main() {
     test('dBpoweramp log returns RipLogFormat.dbPoweramp', () {
       expect(detectLogFormat('dBpoweramp CD Ripper'), RipLogFormat.dbPoweramp);
     });
+
+    test('XLD log with rival tool name in a track title detects as XLD', () {
+      final content = _xldMinimal.replaceFirst(
+        '01 - Track One.flac',
+        '01 - Exact Audio Copy (Remix).flac',
+      );
+      expect(detectLogFormat(content), RipLogFormat.xld);
+    });
+
+    test('EAC log with rival tool names in track titles detects as EAC', () {
+      final content = _eacMinimal
+          .replaceFirst('01 - Track One.flac', '01 - whipper song.flac')
+          .replaceFirst('02 - Track Two.flac', '02 - dBpoweramp anthem.flac');
+      expect(detectLogFormat(content), RipLogFormat.eac);
+    });
+
+    test('whipper log with rival tool name in a path detects as whipper', () {
+      const content = 'Log created by: whipper 0.10.0 (internal logger)\n'
+          'Log creation date: 2026-03-15T12:34:56Z\n'
+          'Ripping phase information:\n'
+          '  Drive: HL-DT-ST BD-RE\n'
+          'Tracks:\n'
+          '  1:\n'
+          '    Filename: /music/CUERipper Tribute/01 Track.flac\n';
+      expect(detectLogFormat(content), RipLogFormat.whipper);
+    });
+
+    test('tool name appearing only deep in the body is not a signature', () {
+      final body = StringBuffer();
+      for (var i = 0; i < 30; i++) {
+        body.writeln('unrelated line $i');
+      }
+      body.writeln('I once used Exact Audio Copy to rip this.');
+      expect(detectLogFormat(body.toString()), RipLogFormat.unknown);
+    });
+
+    test('leading BOM does not defeat signature anchoring', () {
+      expect(detectLogFormat('\uFEFF$_eacMinimal'), RipLogFormat.eac);
+    });
+
+    test('all checked-in fixtures detect unchanged', () {
+      const expected = {
+        'eac_sample.log': RipLogFormat.eac,
+        'eac_errors_sample.log': RipLogFormat.eac,
+        'eac_range_sample.log': RipLogFormat.eac,
+        'eac_500_track.log': RipLogFormat.eac,
+        'xld_sample.log': RipLogFormat.xld,
+      };
+      for (final entry in expected.entries) {
+        final content = File('test/fixtures/${entry.key}').readAsStringSync();
+        expect(detectLogFormat(content), entry.value, reason: entry.key);
+      }
+    });
   });
 
   // -------------------------------------------------------------------------
