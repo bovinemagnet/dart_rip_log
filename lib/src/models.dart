@@ -120,7 +120,9 @@ class DriveInfo {
   /// Drive read-offset correction in samples, if present.
   final int? readOffset;
 
-  /// Adapter/interface description (e.g. "ATAPI"), if present.
+  /// Adapter/interface description, if present. For EAC this is the
+  /// adapter/ID text from the `Used drive` line, verbatim from the
+  /// occurrence of `Adapter:` onward (e.g. "Adapter: 1   ID: 0").
   final String? adapter;
 
   const DriveInfo({

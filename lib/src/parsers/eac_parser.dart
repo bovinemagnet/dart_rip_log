@@ -10,6 +10,7 @@ final _reVersion =
 final _reDate = RegExp(r'EAC extraction logfile from\s+(\d+\.\s+\w+\s+\d{4})',
     caseSensitive: false);
 final _reDrive = RegExp(r'Used drive\s*:\s*(.+)', caseSensitive: false);
+final _reDriveAdapter = RegExp(r'Adapter\s*:', caseSensitive: false);
 final _reReadMode = RegExp(r'Read mode\s*:\s*(.+)', caseSensitive: false);
 final _reReadOffset =
     RegExp(r'Read offset correction\s*:\s*(-?\d+)', caseSensitive: false);
@@ -76,6 +77,7 @@ RipLog parseEac(String content) {
   String? toolVersion;
   DateTime? extractionDate;
   String? driveName;
+  String? driveAdapter;
   String? readMode;
   int? readOffset;
   bool? overread;
@@ -132,7 +134,18 @@ RipLog parseEac(String content) {
     if (driveName == null) {
       final m = _reDrive.firstMatch(trimmed);
       if (m != null) {
-        driveName = m.group(1)?.trim();
+        // EAC appends adapter/ID text to the drive line, e.g.
+        // "ASUS BW-16D1HT   Adapter: 1   ID: 0" — split it off so the
+        // name holds only the model and the adapter text goes to
+        // DriveInfo.adapter.
+        final raw = m.group(1)!.trim();
+        final adapterStart = raw.indexOf(_reDriveAdapter);
+        if (adapterStart > 0) {
+          driveName = raw.substring(0, adapterStart).trim();
+          driveAdapter = raw.substring(adapterStart).trim();
+        } else {
+          driveName = raw;
+        }
         continue;
       }
     }
@@ -214,7 +227,8 @@ RipLog parseEac(String content) {
   }
 
   final drive = driveName != null
-      ? DriveInfo(name: driveName, readOffset: readOffset)
+      ? DriveInfo(
+          name: driveName, readOffset: readOffset, adapter: driveAdapter)
       : null;
 
   // Test-and-copy is derived: true if any track reported a test CRC,

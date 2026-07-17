@@ -9,6 +9,11 @@
   instead of throwing. Behaviour change: a non-UTF-8 binary file no
   longer throws a `FileSystemException`; it parses to an
   unknown-format `RipLog`.
+- **EAC drive parsing** (#31): the `Used drive` line is split on
+  `Adapter:` — `drive.name` now holds only the drive model (e.g.
+  `"ASUS BW-16D1HT"`) and the adapter/ID text populates the previously
+  never-set `drive.adapter` (e.g. `"Adapter: 1   ID: 0"`). JSON-shape
+  change; goldens regenerated.
 - **CLI exit-code change** (#30): under the default `--fail-on any`,
   unparseable input (unknown format or zero tracks) now exits 1
   instead of 0, so a corrupt or non-log file can no longer produce a
