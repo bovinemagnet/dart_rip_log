@@ -63,8 +63,9 @@ void _printUsage(IOSink sink) {
   sink.writeln('');
   sink.writeln('Exit codes:');
   sink.writeln('  0  --fail-on policy not triggered');
-  sink.writeln('  1  --fail-on policy triggered (default: any AR mismatch or');
-  sink.writeln('     track with error counts > 0)');
+  sink.writeln('  1  --fail-on policy triggered (default: any AR mismatch,');
+  sink.writeln('     track with error counts > 0, or unparseable input —');
+  sink.writeln('     unknown format / zero tracks)');
   sink.writeln('  2  bad arguments or file I/O error');
 }
 
@@ -287,7 +288,13 @@ bool _failOnHit(_FailOn policy, RipLog log) {
     case _FailOn.errors:
       return hasErrors;
     case _FailOn.any:
-      return hasMismatch || hasErrors || !isFullyVerified(log);
+      // Unparseable input (unknown format or no tracks) is a failure under
+      // `any` — a corrupt or non-log file must not produce a green build.
+      return hasMismatch ||
+          hasErrors ||
+          log.logFormat == RipLogFormat.unknown ||
+          log.tracks.isEmpty ||
+          !isFullyVerified(log);
   }
 }
 

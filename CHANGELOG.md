@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.0 (unreleased)
+
+- **Encoding detection** (#29): `parseRipLogFile` and the CLI now sniff
+  the byte-order mark before decoding — UTF-16LE (the default encoding
+  of real EAC logs), UTF-16BE, and UTF-8 with BOM all parse
+  transparently; BOM-less input falls back from UTF-8 to Latin-1
+  instead of throwing. Behaviour change: a non-UTF-8 binary file no
+  longer throws a `FileSystemException`; it parses to an
+  unknown-format `RipLog`.
+- **CLI exit-code change** (#30): under the default `--fail-on any`,
+  unparseable input (unknown format or zero tracks) now exits 1
+  instead of 0, so a corrupt or non-log file can no longer produce a
+  green build. `--fail-on mismatch`, `errors`, and `never` are
+  unchanged.
+
 ## 0.1.1
 
 - `compareRipLogs` now diffs `testAndCopy`, `accurateRipDiscId`, and
