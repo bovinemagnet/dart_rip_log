@@ -66,7 +66,9 @@ void _printUsage(IOSink sink) {
   sink.writeln('  1  --fail-on policy triggered (default: any AR mismatch,');
   sink.writeln('     track with error counts > 0, or unparseable input —');
   sink.writeln('     unknown format / zero tracks)');
-  sink.writeln('  2  bad arguments or file I/O error');
+  sink.writeln('  2  bad arguments or file I/O error (unreadable files');
+  sink.writeln('     are reported to stderr and skipped; remaining files');
+  sink.writeln('     are still processed)');
 }
 
 Future<void> main(List<String> args) async {
@@ -169,13 +171,16 @@ Future<void> main(List<String> args) async {
       content = decodeLogBytes(
           path == '-' ? await _readStdin() : await File(path).readAsBytes());
     } on FileSystemException catch (e) {
+      // Report and continue: one unreadable path must not abandon the
+      // remaining files. Exit 2 at the end (I/O beats quality failure).
       stderr.writeln('Cannot read $path: ${e.message}');
-      exit(2);
+      overallExit = 2;
+      continue;
     }
 
     final log = parseRipLog(content);
 
-    if (_failOnHit(failOn, log)) overallExit = 1;
+    if (_failOnHit(failOn, log) && overallExit == 0) overallExit = 1;
 
     if (quiet) {
       stdout.writeln(
