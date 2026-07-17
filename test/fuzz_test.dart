@@ -28,6 +28,10 @@ const _fixtures = [
   'eac_range_sample.log',
   'eac_500_track.log',
   'xld_sample.log',
+  'whipper_sample.log',
+  'cueripper_sample.log',
+  'cueripper_native_sample.log',
+  'dbpoweramp_sample.log',
 ];
 
 /// Random contiguous slice of [content].
