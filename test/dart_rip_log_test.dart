@@ -1045,11 +1045,11 @@ CRC32 hash : AABBCCDD
   // Scaffolded parsers (CUERipper / whipper / dBpoweramp)
   // -------------------------------------------------------------------------
   group('Scaffolded parsers', () {
-    test('CUERipper: dispatches and reports not-implemented', () {
+    test('CUERipper: dispatches to the full parser', () {
       final log = parseRipLog('CUERipper v2.1.7\nsome content');
       expect(log.logFormat, RipLogFormat.cueRipper);
       expect(log.toolVersion, '2.1.7');
-      expect(log.errors.any((e) => e.contains('not yet implemented')), isTrue);
+      expect(log.errors.any((e) => e.contains('not yet implemented')), isFalse);
     });
 
     test('whipper: dispatches and reports not-implemented', () {

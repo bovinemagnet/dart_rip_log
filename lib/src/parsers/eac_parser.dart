@@ -80,8 +80,12 @@ final _reArVerified = RegExp(
     r'Accurately ripped \(confidence\s+(\d+)\)\s+\[([0-9A-Fa-f]+)\]'
     r'(?:.*?\(AR v2 signature:\s*([0-9A-Fa-f]+)\))?',
     caseSensitive: false);
+// Real EAC writes "Cannot be verified as accurate (confidence N)  [XXXXXXXX],
+// AccurateRip returned [YYYYYYYY]" — the confidence there is the database
+// submission count, not a match confidence, so it is not captured.
 final _reArCannot = RegExp(
-    r'Cannot be verified as accurate\s+\[([0-9A-Fa-f]+)\]',
+    r'Cannot be verified as accurate\s*'
+    r'(?:\(confidence\s+\d+\))?\s*\[([0-9A-Fa-f]+)\]',
     caseSensitive: false);
 final _reArNotPresent =
     RegExp(r'Track not present in AccurateRip database', caseSensitive: false);
@@ -102,11 +106,16 @@ final _reInconsistent =
     RegExp(r'Inconsistency in error sectors.*?:\s*(\d+)', caseSensitive: false);
 
 /// Parse an EAC log from its string [content] and return a [RipLog].
-RipLog parseEac(String content) {
+///
+/// CUERipper writes EAC-style logs by default, so its parser delegates
+/// here: [format] tags the result with the true producing tool and
+/// [toolVersion] pre-seeds the version (CUERipper logs carry no
+/// `Exact Audio Copy V…` banner).
+RipLog parseEac(String content,
+    {RipLogFormat format = RipLogFormat.eac, String? toolVersion}) {
   final normalised = normaliseLineEndings(content);
   final lines = normalised.split('\n');
 
-  String? toolVersion;
   DateTime? extractionDate;
   String? driveName;
   String? driveAdapter;
@@ -267,7 +276,7 @@ RipLog parseEac(String content) {
   final tracks = <RipLogTrack>[];
   for (final section in trackSections) {
     final track = _parseTrackSection(section, parsingErrors,
-        isRange: isRangeRip, footerAr: footerAr, toc: toc);
+        isRange: isRangeRip, footerAr: footerAr, toc: toc, format: format);
     if (track != null) tracks.add(track);
   }
 
@@ -300,7 +309,7 @@ RipLog parseEac(String content) {
   }
 
   return RipLog(
-    logFormat: RipLogFormat.eac,
+    logFormat: format,
     toolVersion: toolVersion,
     extractionDate: extractionDate,
     drive: drive,
@@ -324,7 +333,8 @@ RipLog parseEac(String content) {
 RipLogTrack? _parseTrackSection(List<String> lines, List<String> parsingErrors,
     {bool isRange = false,
     Map<int, _FooterArResult> footerAr = const {},
-    Map<int, TocEntry> toc = const {}}) {
+    Map<int, TocEntry> toc = const {},
+    RipLogFormat format = RipLogFormat.eac}) {
   int? trackNumber = isRange ? 1 : null;
   String? filename;
   double? peakLevel;
@@ -508,7 +518,7 @@ RipLogTrack? _parseTrackSection(List<String> lines, List<String> parsingErrors,
       duplicatedBytes: duplicatedBytes,
       inconsistentErrorSectors: inconsistentErrorSectors,
     ),
-    logFormat: RipLogFormat.eac,
+    logFormat: format,
     startSector: tocEntry?.startSector,
     lengthSectors: tocEntry?.lengthSectors,
     durationSeconds: tocEntry?.durationSeconds,
