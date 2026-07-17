@@ -82,6 +82,23 @@ void main() {
       expect(jsonWithoutSource(log), equals(expected));
     });
 
+    test('byteSize reports on-disk bytes for multi-byte UTF-8 content (#35)',
+        () async {
+      // 'é' is two bytes in UTF-8 but one UTF-16 code unit, so a decoded
+      // string length undercounts.
+      final content = asciiContent.replaceFirst('Test Artist', 'Beyoncé');
+      final path = await writeTemp('utf8_multibyte.log', utf8.encode(content));
+      final log = await parseRipLogFile(path);
+      expect(log.source!.byteSize, File(path).lengthSync());
+    });
+
+    test('byteSize reports on-disk bytes for UTF-16LE content (#35)', () async {
+      final path =
+          await writeTemp('utf16le_size.log', utf16LeBytes(asciiContent));
+      final log = await parseRipLogFile(path);
+      expect(log.source!.byteSize, File(path).lengthSync());
+    });
+
     test('non-UTF-8 bytes fall back to Latin-1 instead of throwing', () async {
       // 0xE9 is é in Latin-1 but an invalid standalone byte in UTF-8.
       final content = asciiContent.replaceFirst('Test Artist', 'Beyoncé');

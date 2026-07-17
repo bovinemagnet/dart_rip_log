@@ -31,6 +31,10 @@
   the model in 0.1.0 but never emitted). `durationSeconds` comes from
   the TOC length column (minutes/seconds/frames, 75 frames per second),
   falling back to `lengthSectors / 75`. Goldens regenerated.
+- **`LogSource.byteSize` fix** (#35): now reports the file's on-disk
+  byte size as documented, not the decoded string's UTF-16 code-unit
+  count — the old value was wrong for any non-ASCII log and ~2× off
+  for UTF-16LE EAC logs.
 - **CLI exit-code change** (#30): under the default `--fail-on any`,
   unparseable input (unknown format or zero tracks) now exits 1
   instead of 0, so a corrupt or non-log file can no longer produce a

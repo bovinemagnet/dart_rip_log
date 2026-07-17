@@ -19,7 +19,7 @@ Future<RipLog> parseRipLogFile(String filePath) async {
   final content = decodeLogBytes(bytes);
   final log = parseRipLog(content);
   final source = LogSource(
-    byteSize: content.length,
+    byteSize: bytes.length,
     lineCount: '\n'.allMatches(content).length + 1,
     parserName: log.logFormat.name,
     parsedAt: DateTime.now().toUtc(),
