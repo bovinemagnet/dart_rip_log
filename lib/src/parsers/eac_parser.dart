@@ -75,10 +75,13 @@ final _reTestCrc = RegExp(r'Test CRC\s+([0-9A-Fa-f]+)', caseSensitive: false);
 final _reCopyCrc = RegExp(r'Copy CRC\s+([0-9A-Fa-f]+)', caseSensitive: false);
 final _reCopyOk = RegExp(r'Copy OK', caseSensitive: false);
 
-// AccurateRip status lines
+// AccurateRip status lines. Real EAC writes
+// "Accurately ripped (confidence N)  [XXXXXXXX]  (AR v2)" — the optional
+// trailing "(AR vN)" annotation is the only suffix; no EAC version emits a
+// second "signature" hex value (that vocabulary is XLD's), so only the one
+// CRC is captured.
 final _reArVerified = RegExp(
-    r'Accurately ripped \(confidence\s+(\d+)\)\s+\[([0-9A-Fa-f]+)\]'
-    r'(?:.*?\(AR v2 signature:\s*([0-9A-Fa-f]+)\))?',
+    r'Accurately ripped \(confidence\s+(\d+)\)\s+\[([0-9A-Fa-f]+)\]',
     caseSensitive: false);
 // Real EAC writes "Cannot be verified as accurate (confidence N)  [XXXXXXXX],
 // AccurateRip returned [YYYYYYYY]" — the confidence there is the database
@@ -343,7 +346,6 @@ RipLogTrack? _parseTrackSection(List<String> lines, List<String> parsingErrors,
   String? copyCrc;
   AccurateRipStatus arStatus = AccurateRipStatus.notChecked;
   String? arCrcV1;
-  String? arCrcV2;
   int? arConfidence;
   bool copyOk = false;
 
@@ -419,7 +421,6 @@ RipLogTrack? _parseTrackSection(List<String> lines, List<String> parsingErrors,
       arStatus = AccurateRipStatus.verified;
       arConfidence = int.tryParse(mArVerified.group(1)!);
       arCrcV1 = mArVerified.group(2)?.toUpperCase();
-      arCrcV2 = mArVerified.group(3)?.toUpperCase();
       continue;
     }
 
@@ -505,7 +506,6 @@ RipLogTrack? _parseTrackSection(List<String> lines, List<String> parsingErrors,
     testCrc: testCrc,
     accurateRipStatus: arStatus,
     accurateRipCrcV1: arCrcV1,
-    accurateRipCrcV2: arCrcV2,
     accurateRipConfidence: arConfidence,
     copyOk: copyOk,
     errors: TrackErrors(

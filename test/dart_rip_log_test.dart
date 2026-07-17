@@ -26,7 +26,7 @@ Track  1
      Track quality 99.8 %
      Test CRC 882B01BE
      Copy CRC 882B01BE
-     Accurately ripped (confidence 1)  [F4E2268A]
+     Accurately ripped (confidence 1)  [F4E2268A]  (AR v2)
      Copy OK
 
 
@@ -37,7 +37,7 @@ Track  2
      Peak level 75.0 %
      Track quality 100.0 %
      Copy CRC AABBCCDD
-     Cannot be verified as accurate  [12345678]
+     Cannot be verified as accurate (confidence 3)  [12345678], AccurateRip returned [87654321]  (AR v2)
      Copy OK
 
 
@@ -801,11 +801,15 @@ Track  1
   });
 
   // -------------------------------------------------------------------------
-  // EAC AR v2 signature capture
+  // EAC AccurateRip result lines — real V1.x shapes (#39)
   // -------------------------------------------------------------------------
-  group('EAC AR v2 signature', () {
-    test('captures v2 signature when present on verified line', () {
-      const withV2 = '''
+  //
+  // Genuine EAC never emits an "(AR v2 signature: XXXX)" suffix — the only
+  // trailing annotation is "(AR v1)" / "(AR v2)", and the only second hex
+  // value appears on the inaccurate line as "AccurateRip returned [Y]".
+  group('EAC AccurateRip line shapes', () {
+    RipLogTrack parseSingleTrack(String arLine) {
+      final content = '''
 Exact Audio Copy V1.6 from 23. October 2019
 
 EAC extraction logfile from 15. March 2026
@@ -815,44 +819,61 @@ Used drive : Some Drive
 Track  1
 
      Filename C:\\a.flac
-     Peak level 90.0 %
-     Track quality 99.9 %
      Copy CRC DEADBEEF
-     Accurately ripped (confidence 1)  [F4E2268A]  (AR v2 signature: A1B2C3D4)
+$arLine
      Copy OK
 ''';
-      final t = parseRipLog(withV2).tracks.first;
+      return parseRipLog(content).tracks.first;
+    }
+
+    test('verified with (AR v2) suffix', () {
+      final t = parseSingleTrack(
+          '     Accurately ripped (confidence 62)  [ECDA64DA]  (AR v2)');
       expect(t.accurateRipStatus, AccurateRipStatus.verified);
-      expect(t.accurateRipCrcV1, 'F4E2268A');
-      expect(t.accurateRipCrcV2, 'A1B2C3D4');
+      expect(t.accurateRipConfidence, 62);
+      expect(t.accurateRipCrcV1, 'ECDA64DA');
+      expect(t.accurateRipCrcV2, isNull);
     });
 
-    test('v2 signature null when absent', () {
-      const withoutV2 = '''
-Exact Audio Copy V1.6 from 23. October 2019
+    test('verified with (AR v1) suffix', () {
+      final t = parseSingleTrack(
+          '     Accurately ripped (confidence 1)  [32024FA3]  (AR v1)');
+      expect(t.accurateRipStatus, AccurateRipStatus.verified);
+      expect(t.accurateRipCrcV1, '32024FA3');
+    });
 
-EAC extraction logfile from 15. March 2026
+    test('pre-1.0 verified line without an (AR vN) suffix', () {
+      final t =
+          parseSingleTrack('     Accurately ripped (confidence 5)  [86B01960]');
+      expect(t.accurateRipStatus, AccurateRipStatus.verified);
+      expect(t.accurateRipCrcV1, '86B01960');
+      expect(t.accurateRipCrcV2, isNull);
+    });
 
-Used drive : Some Drive
+    test('inaccurate line with confidence and AccurateRip returned', () {
+      final t = parseSingleTrack(
+          '     Cannot be verified as accurate (confidence 4)  [01F73FA6], '
+          'AccurateRip returned [976E7B60]  (AR v2)');
+      expect(t.accurateRipStatus, AccurateRipStatus.mismatch);
+      expect(t.accurateRipCrcV1, '01F73FA6');
+    });
 
-Track  1
-
-     Filename C:\\a.flac
-     Copy CRC DEADBEEF
-     Accurately ripped (confidence 1)  [F4E2268A]
-     Copy OK
-''';
-      final t = parseRipLog(withoutV2).tracks.first;
+    test('synthetic "(AR v2 signature: X)" is not captured as a v2 CRC', () {
+      // No real EAC version emits this shape; it must not populate
+      // accurateRipCrcV2.
+      final t =
+          parseSingleTrack('     Accurately ripped (confidence 1)  [F4E2268A]  '
+              '(AR v2 signature: A1B2C3D4)');
       expect(t.accurateRipStatus, AccurateRipStatus.verified);
       expect(t.accurateRipCrcV1, 'F4E2268A');
       expect(t.accurateRipCrcV2, isNull);
     });
 
-    test('eac_sample.log fixture Track 1 has v2 signature A1B2C3D4', () {
+    test('eac_sample.log fixture Track 1 carries no v2 CRC', () {
       final path = '${Directory.current.path}/test/fixtures/eac_sample.log';
       if (!File(path).existsSync()) return;
       final log = parseRipLog(File(path).readAsStringSync());
-      expect(log.tracks[0].accurateRipCrcV2, 'A1B2C3D4');
+      expect(log.tracks[0].accurateRipCrcV2, isNull);
     });
   });
 

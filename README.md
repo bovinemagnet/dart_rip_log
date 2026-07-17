@@ -18,8 +18,8 @@ Zero runtime dependencies beyond the Dart SDK.
   - Header: tool version, extraction date, drive, read mode, read offset,
     overread, gap handling, media type.
   - Per track: filename, peak level, track quality, test/copy CRCs, Copy OK.
-  - AccurateRip: `verified` (with confidence, v1 CRC and optional v2 signature),
-    `mismatch`, `notInDatabase`.
+  - AccurateRip: `verified` (with confidence and CRC), `mismatch`,
+    `notInDatabase`.
   - Full error-statistics block (read / skip / edge jitter / atom jitter /
     drift / dropped bytes / duplicated bytes / inconsistency).
   - Footer: summary line and log checksum.
