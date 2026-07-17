@@ -310,6 +310,11 @@ RipLogTrack? _parseTrackSection(
   }
 
   final tocEntry = toc[trackNumber];
+  final errors = TrackErrors(
+    readErrors: readErrors,
+    jitterErrors: jitterErrors,
+    damagedSectors: damagedSectors,
+  );
 
   return RipLogTrack(
     trackNumber: trackNumber,
@@ -321,12 +326,12 @@ RipLogTrack? _parseTrackSection(
     accurateRipCrcV1: arCrcV1,
     accurateRipCrcV2: arCrcV2,
     accurateRipConfidence: arConfidence,
-    copyOk: arStatus == AccurateRipStatus.verified,
-    errors: TrackErrors(
-      readErrors: readErrors,
-      jitterErrors: jitterErrors,
-      damagedSectors: damagedSectors,
-    ),
+    // XLD has no "Copy OK" concept — a clean rip of a disc that is not
+    // in the AccurateRip database is still a good copy, so copyOk is
+    // derived from the track reporting zero errors (see
+    // RipLogTrack.copyOk).
+    copyOk: !errors.hasErrors,
+    errors: errors,
     logFormat: RipLogFormat.xld,
     startSector: tocEntry?.startSector,
     lengthSectors: tocEntry?.lengthSectors,

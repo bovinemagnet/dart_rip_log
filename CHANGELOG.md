@@ -38,6 +38,11 @@
 - **EAC extraction time-of-day** (#36): `extractionDate` now includes
   the hour and minute from date lines like `15. March 2026, 20:32`.
   Date-only lines still yield midnight.
+- **XLD `copyOk` semantics** (#37): no longer conflated with
+  AccurateRip verification. XLD has no "Copy OK" concept, so `copyOk`
+  is now derived from the track's `Statistics` block reporting zero
+  errors — a clean rip of a disc that is not in the AccurateRip
+  database no longer reports `copyOk: false`.
 - **CLI exit-code change** (#30): under the default `--fail-on any`,
   unparseable input (unknown format or zero tracks) now exits 1
   instead of 0, so a corrupt or non-log file can no longer produce a

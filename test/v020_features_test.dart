@@ -193,4 +193,46 @@ void main() {
       expect(log.extractionDate, DateTime(2026, 3, 15));
     });
   });
+
+  group('XLD copyOk semantics (#37)', () {
+    String xldLogWith(String trackBody) =>
+        'X Lossless Decoder version 20230916 (153.8)\n'
+        '\n'
+        'XLD extraction logfile from 2026-03-15 12:34:56 +0900\n'
+        '\n'
+        'Track 01\n'
+        'Filename : /Music/01 - One.flac\n'
+        '\n'
+        '$trackBody'
+        '\n'
+        'End of status report\n';
+
+    test('zero-error track not in the AR database has copyOk true', () {
+      final log = xldLogWith('CRC32 hash               : 882B01BE\n'
+          '->Track not present in AccurateRip database\n'
+          'Statistics\n'
+          ' Read error                           : 0\n'
+          ' Jitter error (maybe fixed)           : 0\n'
+          ' Damaged sector count                 : 0\n');
+      final t = parseRipLog(log).tracks.single;
+      expect(t.accurateRipStatus, AccurateRipStatus.notInDatabase);
+      expect(t.errors.hasErrors, isFalse);
+      // XLD has no "Copy OK" concept — copyOk is derived from the track
+      // reporting zero errors, independent of AccurateRip.
+      expect(t.copyOk, isTrue);
+    });
+
+    test('track with read errors has copyOk false even when AR-verified', () {
+      final log = xldLogWith('CRC32 hash               : 882B01BE\n'
+          '->Accurately ripped (v1+v2, confidence 3/3)\n'
+          'Statistics\n'
+          ' Read error                           : 2\n'
+          ' Jitter error (maybe fixed)           : 0\n'
+          ' Damaged sector count                 : 0\n');
+      final t = parseRipLog(log).tracks.single;
+      expect(t.accurateRipStatus, AccurateRipStatus.verified);
+      expect(t.errors.hasErrors, isTrue);
+      expect(t.copyOk, isFalse);
+    });
+  });
 }

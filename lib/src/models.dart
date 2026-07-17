@@ -290,6 +290,11 @@ class RipLogTrack {
   final int? accurateRipConfidence;
 
   /// Whether the ripper reported a successful copy.
+  ///
+  /// For EAC this reflects the per-track `Copy OK` line. XLD has no
+  /// equivalent concept, so for XLD tracks this is derived instead: `true`
+  /// when the track's `Statistics` block reports zero errors, independent
+  /// of AccurateRip status.
   final bool copyOk;
 
   /// Per-track error statistics.
