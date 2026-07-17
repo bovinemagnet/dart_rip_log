@@ -26,9 +26,12 @@ Zero runtime dependencies beyond the Dart SDK.
   - Range-rip logs (single-track whole-disc extractions).
 - **XLD** (X Lossless Decoder) — full parser, including per-track AR v1/v2
   signatures and the `Statistics` block.
-- **CUERipper**, **whipper**, **dBpoweramp** — format detection and scaffolded
-  parsers (tool version captured; full per-track parsing pending real-world
-  sample logs).
+- **whipper** — full parser for the YAML-style logs of whipper 0.8+ (and the
+  plain-text 0.7 layout): header, TOC sectors, per-track test/copy CRCs,
+  AccurateRip v1/v2 results, and the SHA-256 log hash.
+- **CUERipper**, **dBpoweramp** — format detection and scaffolded parsers
+  (tool version captured; full per-track parsing pending real-world sample
+  logs).
 - Tolerant of malformed input: truncated files, garbled lines, CRLF/LF/mixed
   line endings, and missing fields return a best-effort `RipLog` rather than
   throwing.

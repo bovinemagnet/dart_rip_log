@@ -1105,11 +1105,11 @@ CRC32 hash : AABBCCDD
       expect(log.errors.any((e) => e.contains('not yet implemented')), isTrue);
     });
 
-    test('whipper: dispatches and reports not-implemented', () {
+    test('whipper: dispatches to the full parser', () {
       final log = parseRipLog('Log created by: whipper 0.10.0\nsome content');
       expect(log.logFormat, RipLogFormat.whipper);
       expect(log.toolVersion, '0.10.0');
-      expect(log.errors.any((e) => e.contains('not yet implemented')), isTrue);
+      expect(log.errors.any((e) => e.contains('not yet implemented')), isFalse);
     });
 
     test('dBpoweramp: dispatches and reports not-implemented', () {

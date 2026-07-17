@@ -9,7 +9,8 @@ import 'package:test/test.dart';
 /// If a parser change intentionally changes the JSON shape, regenerate
 /// goldens with:
 ///
-///   for f in eac_sample eac_errors_sample eac_range_sample xld_sample; do \
+///   for f in eac_sample eac_errors_sample eac_range_sample xld_sample \
+///       whipper_sample; do \
 ///     dart run bin/riplog.dart --format json test/fixtures/$f.log \
 ///       > test/fixtures/$f.expected.json; \
 ///   done
@@ -19,6 +20,7 @@ void main() {
     'eac_errors_sample',
     'eac_range_sample',
     'xld_sample',
+    'whipper_sample',
   ];
 
   for (final name in fixtures) {
