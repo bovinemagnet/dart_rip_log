@@ -10,6 +10,7 @@ import 'package:test/test.dart';
 /// goldens with:
 ///
 ///   for f in eac_sample eac_errors_sample eac_range_sample xld_sample \
+///       cueripper_sample cueripper_native_sample whipper_sample \
 ///       dbpoweramp_sample; do \
 ///     dart run bin/riplog.dart --format json test/fixtures/$f.log \
 ///       > test/fixtures/$f.expected.json; \
@@ -20,6 +21,9 @@ void main() {
     'eac_errors_sample',
     'eac_range_sample',
     'xld_sample',
+    'cueripper_sample',
+    'cueripper_native_sample',
+    'whipper_sample',
     'dbpoweramp_sample',
   ];
 

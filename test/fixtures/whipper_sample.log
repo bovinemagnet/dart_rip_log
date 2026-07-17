@@ -1,0 +1,128 @@
+Log created by: whipper 0.10.0 (internal logger)
+Log creation date: 2021-06-14T09:41:37Z
+
+Ripping phase information:
+  Drive: HL-DT-STBD-RE  WH14NS40 (revision 1.03)
+  Extraction engine: cdparanoia cdparanoia III 10.2 libcdio 2.1.0 x86_64-pc-linux-gnu
+  Defeat audio cache: true
+  Read offset correction: 6
+  Overread into lead-out: false
+  Gap detection: cdrdao 1.2.4
+  CD-R detected: false
+
+CD metadata:
+  Release:
+    Artist: Sample Artist
+    Title: Sample Album
+  CDDB Disc ID: 27043f04
+  MusicBrainz Disc ID: X9hJkT2pQeLmR7vN4wZbC1dYfA8-
+  MusicBrainz lookup URL: https://musicbrainz.org/cdtoc/attach?toc=1+4+79275+150+20862+37917+60492&tracks=4&id=X9hJkT2pQeLmR7vN4wZbC1dYfA8-
+  MusicBrainz Release URL: https://musicbrainz.org/release/11111111-2222-3333-4444-555555555555
+
+TOC:
+  1:
+    Start: 00:00:00
+    Length: 04:36:12
+    Start sector: 0
+    End sector: 20711
+
+  2:
+    Start: 04:36:12
+    Length: 03:47:30
+    Start sector: 20712
+    End sector: 37766
+
+  3:
+    Start: 08:23:42
+    Length: 05:01:00
+    Start sector: 37767
+    End sector: 60341
+
+  4:
+    Start: 13:24:42
+    Length: 04:10:33
+    Start sector: 60342
+    End sector: 79124
+
+Tracks:
+  1:
+    Filename: ./Sample Artist - Sample Album/01. Sample Artist - First Track.flac
+    Peak level: 0.876341
+    Pre-emphasis: false
+    Extraction speed: 2.3 X
+    Extraction quality: 100.00 %
+    Test CRC: 8A5F3C21
+    Copy CRC: 8A5F3C21
+    AccurateRip v1:
+      Result: Found, exact match
+      Confidence: 14
+      Local CRC: 95E6A189
+      Remote CRC: 95E6A189
+    AccurateRip v2:
+      Result: Found, exact match
+      Confidence: 11
+      Local CRC: 113FA733
+      Remote CRC: 113FA733
+    Status: Copy OK
+
+  2:
+    Filename: ./Sample Artist - Sample Album/02. Sample Artist - Second Track.flac
+    Pre-gap length: 00:02:00
+    Peak level: 0.972351
+    Pre-emphasis: false
+    Extraction speed: 3.1 X
+    Extraction quality: 100.00 %
+    Test CRC: F77C14CB
+    Copy CRC: F77C14CB
+    AccurateRip v1:
+      Result: Found, exact match
+      Confidence: 14
+      Local CRC: 0B3316DB
+      Remote CRC: 0B3316DB
+    AccurateRip v2:
+      Result: Found, exact match
+      Confidence: 10
+      Local CRC: A0AE0E57
+      Remote CRC: A0AE0E57
+    Status: Copy OK
+
+  3:
+    Filename: ./Sample Artist - Sample Album/03. Sample Artist - Third Track.flac
+    Peak level: 0.812744
+    Pre-emphasis: false
+    Extraction speed: 3.6 X
+    Extraction quality: 100.00 %
+    Test CRC: 2E6D08BA
+    Copy CRC: 2E6D08BA
+    AccurateRip v1:
+      Result: Found, NO exact match
+      Confidence: 13
+      Local CRC: 5D91F6A2
+      Remote CRC: 6C82E591
+    AccurateRip v2:
+      Result: Found, exact match
+      Confidence: 9
+      Local CRC: D4B7250E
+      Remote CRC: D4B7250E
+    Status: Copy OK
+
+  4:
+    Filename: ./Sample Artist - Sample Album/04. Sample Artist - Fourth Track.flac
+    Peak level: 0.998321
+    Pre-emphasis: false
+    Extraction speed: 4.0 X
+    Extraction quality: 100.00 %
+    Test CRC: 71C9E04D
+    Copy CRC: 71C9E04D
+    AccurateRip v1:
+      Result: Track not present in AccurateRip database
+    AccurateRip v2:
+      Result: Track not present in AccurateRip database
+    Status: Copy OK
+
+Conclusive status report:
+  AccurateRip summary: Some tracks could not be verified as accurate (1/4 got no match)
+  Health status: No errors occurred
+  EOF: End of status report
+
+SHA-256 hash: A900FDC1978A2C3F141DB61F31B8647FBCA71A5EDDABD3D59895077D0E8AD272

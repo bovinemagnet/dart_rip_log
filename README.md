@@ -18,20 +18,23 @@ Zero runtime dependencies beyond the Dart SDK.
   - Header: tool version, extraction date, drive, read mode, read offset,
     overread, gap handling, media type.
   - Per track: filename, peak level, track quality, test/copy CRCs, Copy OK.
-  - AccurateRip: `verified` (with confidence, v1 CRC and optional v2 signature),
-    `mismatch`, `notInDatabase`.
+  - AccurateRip: `verified` (with confidence and CRC), `mismatch`,
+    `notInDatabase`.
   - Full error-statistics block (read / skip / edge jitter / atom jitter /
     drift / dropped bytes / duplicated bytes / inconsistency).
   - Footer: summary line and log checksum.
   - Range-rip logs (single-track whole-disc extractions).
 - **XLD** (X Lossless Decoder) — full parser, including per-track AR v1/v2
   signatures and the `Statistics` block.
+- **whipper** — full parser for the YAML-style logs of whipper 0.8+ (and the
+  plain-text 0.7 layout): header, TOC sectors, per-track test/copy CRCs,
+  AccurateRip v1/v2 results, and the SHA-256 log hash.
+- **CUERipper** — full parser for both log layouts: the default EAC-style
+  logs (parsed via the EAC parser, tagged as CUERipper) and the native
+  layout with its `AccurateRip summary` v1/v2 CRC table.
 - **dBpoweramp** — full parser for the secure extraction log: drive and
   offset settings, per-track LBA ranges, CRC32 and AccurateRip CRCs, and
   the Accurate / Inaccurate / Secure / Insecure status shapes.
-- **CUERipper**, **whipper** — format detection and scaffolded parsers
-  (tool version captured; full per-track parsing pending real-world sample
-  logs).
 - Tolerant of malformed input: truncated files, garbled lines, CRLF/LF/mixed
   line endings, and missing fields return a best-effort `RipLog` rather than
   throwing.
@@ -134,7 +137,10 @@ Exit-code policy is controlled by `--fail-on`:
 | `errors`    | any track error counts                          |
 | `never`     | never (always exits 0 on successful parse)      |
 
-`2` is always returned for bad arguments or I/O errors. With multiple files
+`2` is always returned for bad arguments or I/O errors. An unreadable file
+in a multi-file run is reported to stderr and skipped — remaining files are
+still processed and their results emitted, with exit code 2 at the end
+(I/O errors take precedence over quality failures). With multiple files
 the JSON output is an array (one entry per file); `ndjson` emits one object
 per line; `text` / `--summary` each file is prefixed with `# <path>`.
 Colour output respects `NO_COLOR` and `stdout.hasTerminal` by default.
