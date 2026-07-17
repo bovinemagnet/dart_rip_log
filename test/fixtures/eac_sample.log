@@ -24,6 +24,15 @@ Used output format              : User Defined Encoder
 Selected bitdepth               : 16 Bit
 
 
+TOC of the extracted CD
+
+     Track |   Start  |  Length  | Start sector | End sector
+    ---------------------------------------------------------
+        1  |  0:00.00 |  4:32.15 |         0    |    20414
+        2  |  4:32.15 |  3:45.00 |     20415    |    37289
+        3  |  8:17.15 |  5:10.30 |     37290    |    60569
+
+
 Track  1
 
      Filename C:\Music\TestAlbum\01 - Track One.flac

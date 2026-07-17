@@ -1,5 +1,6 @@
 import '../models.dart';
 import '../utils.dart';
+import 'toc_parser.dart';
 
 // ---------------------------------------------------------------------------
 // Header regexes
@@ -161,9 +162,10 @@ RipLog parseXld(String content) {
   }
 
   // ---- Parse tracks ----
+  final toc = parseTocTable(lines);
   final tracks = <RipLogTrack>[];
   for (final section in trackSections) {
-    final track = _parseTrackSection(section, parsingErrors);
+    final track = _parseTrackSection(section, parsingErrors, toc);
     if (track != null) tracks.add(track);
   }
 
@@ -191,7 +193,7 @@ RipLog parseXld(String content) {
 // ---------------------------------------------------------------------------
 
 RipLogTrack? _parseTrackSection(
-    List<String> lines, List<String> parsingErrors) {
+    List<String> lines, List<String> parsingErrors, Map<int, TocEntry> toc) {
   int? trackNumber;
   String? filename;
   double? peakLevel;
@@ -307,6 +309,8 @@ RipLogTrack? _parseTrackSection(
     return null;
   }
 
+  final tocEntry = toc[trackNumber];
+
   return RipLogTrack(
     trackNumber: trackNumber,
     filename: filename,
@@ -324,5 +328,8 @@ RipLogTrack? _parseTrackSection(
       damagedSectors: damagedSectors,
     ),
     logFormat: RipLogFormat.xld,
+    startSector: tocEntry?.startSector,
+    lengthSectors: tocEntry?.lengthSectors,
+    durationSeconds: tocEntry?.durationSeconds,
   );
 }

@@ -25,6 +25,12 @@
   (confidence 2)  [CRC]`) are now mapped to the right tracks by number.
   Previously every footer line overwrote the *last* track's AR fields
   while the others stayed `notChecked`.
+- **TOC table parsing** (#34): both the EAC and XLD parsers now read
+  the `TOC of the extracted CD` table and populate `startSector`,
+  `lengthSectors`, and `durationSeconds` on each track (fields added to
+  the model in 0.1.0 but never emitted). `durationSeconds` comes from
+  the TOC length column (minutes/seconds/frames, 75 frames per second),
+  falling back to `lengthSectors / 75`. Goldens regenerated.
 - **CLI exit-code change** (#30): under the default `--fail-on any`,
   unparseable input (unknown format or zero tracks) now exits 1
   instead of 0, so a corrupt or non-log file can no longer produce a

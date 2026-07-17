@@ -37,7 +37,10 @@
         "damagedSectors": 0,
         "hasErrors": false
       },
-      "logFormat": "eac"
+      "logFormat": "eac",
+      "startSector": 0,
+      "lengthSectors": 20415,
+      "durationSeconds": 272.2
     },
     {
       "trackNumber": 2,
@@ -61,7 +64,10 @@
         "damagedSectors": 0,
         "hasErrors": false
       },
-      "logFormat": "eac"
+      "logFormat": "eac",
+      "startSector": 20415,
+      "lengthSectors": 16875,
+      "durationSeconds": 225.0
     },
     {
       "trackNumber": 3,
@@ -84,7 +90,10 @@
         "damagedSectors": 0,
         "hasErrors": false
       },
-      "logFormat": "eac"
+      "logFormat": "eac",
+      "startSector": 37290,
+      "lengthSectors": 23280,
+      "durationSeconds": 310.4
     }
   ],
   "accurateRipSummary": "All tracks accurately ripped",

@@ -1,5 +1,6 @@
 import '../models.dart';
 import '../utils.dart';
+import 'toc_parser.dart';
 
 // ---------------------------------------------------------------------------
 // Header regexes
@@ -257,10 +258,13 @@ RipLog parseEac(String content) {
   }
 
   // ---- Parse tracks ----
+  // TOC data is merged by track number. A range rip's single synthetic
+  // track spans the whole disc, so per-track TOC rows do not apply.
+  final toc = isRangeRip ? const <int, TocEntry>{} : parseTocTable(lines);
   final tracks = <RipLogTrack>[];
   for (final section in trackSections) {
     final track = _parseTrackSection(section, parsingErrors,
-        isRange: isRangeRip, footerAr: footerAr);
+        isRange: isRangeRip, footerAr: footerAr, toc: toc);
     if (track != null) tracks.add(track);
   }
 
@@ -315,7 +319,9 @@ RipLog parseEac(String content) {
 // ---------------------------------------------------------------------------
 
 RipLogTrack? _parseTrackSection(List<String> lines, List<String> parsingErrors,
-    {bool isRange = false, Map<int, _FooterArResult> footerAr = const {}}) {
+    {bool isRange = false,
+    Map<int, _FooterArResult> footerAr = const {},
+    Map<int, TocEntry> toc = const {}}) {
   int? trackNumber = isRange ? 1 : null;
   String? filename;
   double? peakLevel;
@@ -475,6 +481,8 @@ RipLogTrack? _parseTrackSection(List<String> lines, List<String> parsingErrors,
     arCrcV1 = footerResult.crcV1;
   }
 
+  final tocEntry = toc[trackNumber];
+
   return RipLogTrack(
     trackNumber: trackNumber,
     filename: filename,
@@ -498,6 +506,9 @@ RipLogTrack? _parseTrackSection(List<String> lines, List<String> parsingErrors,
       inconsistentErrorSectors: inconsistentErrorSectors,
     ),
     logFormat: RipLogFormat.eac,
+    startSector: tocEntry?.startSector,
+    lengthSectors: tocEntry?.lengthSectors,
+    durationSeconds: tocEntry?.durationSeconds,
   );
 }
 

@@ -34,7 +34,10 @@
         "damagedSectors": 0,
         "hasErrors": false
       },
-      "logFormat": "xld"
+      "logFormat": "xld",
+      "startSector": 0,
+      "lengthSectors": 14627,
+      "durationSeconds": 194.69333333333333
     },
     {
       "trackNumber": 2,
@@ -58,7 +61,10 @@
         "damagedSectors": 0,
         "hasErrors": true
       },
-      "logFormat": "xld"
+      "logFormat": "xld",
+      "startSector": 14627,
+      "lengthSectors": 18148,
+      "durationSeconds": 241.97333333333333
     }
   ],
   "quality": "errors",

@@ -128,4 +128,55 @@ void main() {
       expect(t2.accurateRipCrcV1, isNot('1A2B3C4D'));
     });
   });
+
+  group('TOC table parsing (#34)', () {
+    test('EAC tracks carry startSector / lengthSectors / durationSeconds', () {
+      final log =
+          parseRipLog(File('test/fixtures/eac_sample.log').readAsStringSync());
+      expect(log.tracks, hasLength(3));
+
+      final t1 = log.tracks[0];
+      expect(t1.startSector, 0);
+      expect(t1.lengthSectors, 20415);
+      // 4:32.15 → 4*60 + 32 + 15/75 = 272.2 s
+      expect(t1.durationSeconds, closeTo(272.2, 0.001));
+
+      final t2 = log.tracks[1];
+      expect(t2.startSector, 20415);
+      expect(t2.lengthSectors, 16875);
+      expect(t2.durationSeconds, closeTo(225.0, 0.001));
+
+      final t3 = log.tracks[2];
+      expect(t3.startSector, 37290);
+      expect(t3.lengthSectors, 23280);
+      expect(t3.durationSeconds, closeTo(310.4, 0.001));
+    });
+
+    test('XLD tracks carry startSector / lengthSectors / durationSeconds', () {
+      final log =
+          parseRipLog(File('test/fixtures/xld_sample.log').readAsStringSync());
+      expect(log.tracks, hasLength(2));
+
+      final t1 = log.tracks[0];
+      expect(t1.startSector, 0);
+      expect(t1.lengthSectors, 14627);
+      // 03:14:52 → 3*60 + 14 + 52/75 s
+      expect(t1.durationSeconds, closeTo(194.693, 0.001));
+
+      final t2 = log.tracks[1];
+      expect(t2.startSector, 14627);
+      expect(t2.lengthSectors, 18148);
+      expect(t2.durationSeconds, closeTo(241.973, 0.001));
+    });
+
+    test('logs without a TOC table leave the fields null', () {
+      final log = parseRipLog(
+          File('test/fixtures/eac_errors_sample.log').readAsStringSync());
+      for (final t in log.tracks) {
+        expect(t.startSector, isNull);
+        expect(t.lengthSectors, isNull);
+        expect(t.durationSeconds, isNull);
+      }
+    });
+  });
 }
