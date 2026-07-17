@@ -8,7 +8,10 @@ import 'toc_parser.dart';
 
 final _reVersion =
     RegExp(r'Exact Audio Copy\s+(V[\d.]+)', caseSensitive: false);
-final _reDate = RegExp(r'EAC extraction logfile from\s+(\d+\.\s+\w+\s+\d{4})',
+// Date with optional time-of-day: "15. March 2026" or "15. March 2026, 20:32".
+final _reDate = RegExp(
+    r'EAC extraction logfile from\s+'
+    r'(\d+\.\s+\w+\s+\d{4}(?:\s*,\s*\d{1,2}:\d{2})?)',
     caseSensitive: false);
 final _reDrive = RegExp(r'Used drive\s*:\s*(.+)', caseSensitive: false);
 final _reDriveAdapter = RegExp(r'Adapter\s*:', caseSensitive: false);
@@ -541,14 +544,24 @@ final _monthNames = <String, int>{
   'dezembro': 12,
 };
 
+final _reTimeOfDay = RegExp(r',\s*(\d{1,2}):(\d{2})\s*$');
+
 DateTime? _parseEacDate(String? raw) {
   if (raw == null) return null;
-  // e.g. "15. March 2026"
+  // e.g. "15. March 2026" or "15. March 2026, 20:32"
+  var hour = 0;
+  var minute = 0;
+  final mTime = _reTimeOfDay.firstMatch(raw);
+  if (mTime != null) {
+    hour = int.parse(mTime.group(1)!);
+    minute = int.parse(mTime.group(2)!);
+    raw = raw.substring(0, mTime.start);
+  }
   final parts = raw.split(RegExp(r'[\s.]+'));
   if (parts.length < 3) return null;
   final day = int.tryParse(parts[0]);
   final month = _monthNames[parts[1].toLowerCase()];
   final year = int.tryParse(parts[2]);
   if (day == null || month == null || year == null) return null;
-  return DateTime(year, month, day);
+  return DateTime(year, month, day, hour, minute);
 }

@@ -35,6 +35,9 @@
   byte size as documented, not the decoded string's UTF-16 code-unit
   count — the old value was wrong for any non-ASCII log and ~2× off
   for UTF-16LE EAC logs.
+- **EAC extraction time-of-day** (#36): `extractionDate` now includes
+  the hour and minute from date lines like `15. March 2026, 20:32`.
+  Date-only lines still yield midnight.
 - **CLI exit-code change** (#30): under the default `--fail-on any`,
   unparseable input (unknown format or zero tracks) now exits 1
   instead of 0, so a corrupt or non-log file can no longer produce a

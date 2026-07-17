@@ -179,4 +179,18 @@ void main() {
       }
     });
   });
+
+  group('EAC extraction time-of-day (#36)', () {
+    test('date line with ", HH:MM" carries hour and minute', () {
+      final log = parseRipLog('Exact Audio Copy V1.6 from 23. October 2019\n'
+          'EAC extraction logfile from 15. March 2026, 20:32\n');
+      expect(log.extractionDate, DateTime(2026, 3, 15, 20, 32));
+    });
+
+    test('date-only line still yields midnight', () {
+      final log = parseRipLog('Exact Audio Copy V1.6 from 23. October 2019\n'
+          'EAC extraction logfile from 15. March 2026\n');
+      expect(log.extractionDate, DateTime(2026, 3, 15));
+    });
+  });
 }
