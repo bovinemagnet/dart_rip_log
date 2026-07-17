@@ -32,8 +32,9 @@ Zero runtime dependencies beyond the Dart SDK.
 - **CUERipper** — full parser for both log layouts: the default EAC-style
   logs (parsed via the EAC parser, tagged as CUERipper) and the native
   layout with its `AccurateRip summary` v1/v2 CRC table.
-- **dBpoweramp** — format detection and scaffolded parser (tool version
-  captured; full per-track parsing pending real-world sample logs).
+- **dBpoweramp** — full parser for the secure extraction log: drive and
+  offset settings, per-track LBA ranges, CRC32 and AccurateRip CRCs, and
+  the Accurate / Inaccurate / Secure / Insecure status shapes.
 - Tolerant of malformed input: truncated files, garbled lines, CRLF/LF/mixed
   line endings, and missing fields return a best-effort `RipLog` rather than
   throwing.

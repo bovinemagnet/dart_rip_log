@@ -1,0 +1,67 @@
+dBpoweramp Release 17.2 Digital Audio Extraction Log from Wednesday, July 21, 2021 22:44
+
+Drive & Settings
+----------------
+
+Ripping with drive 'E:   [HL-DT-ST - DVDRAM GP60NB50 ]',  Drive offset: 6,  Overread Lead-in/out: No
+AccurateRip: Active,  Using C2: No,  Cache: 1024 KB,  FUA Cache Invalidate: No
+Pass 1 Drive Speed: Max,  Pass 2 Drive Speed: Max
+Ultra::  Vary Drive Speed: Yes,  Min Passes: 3,  Max Passes: 6,  Finish After Clean Passes: 2
+Bad Sector Re-rip::  Drive Speed: Max,  Maximum Re-reads: 34
+
+Encoder: FLAC -compression-level-5
+DSP Effects / Actions: -dspeffect1="CUE Sheet - Multiple Files= -UTF8"
+
+Extraction Log
+--------------
+
+Track 1:  Ripped LBA 0 to 16852 (3:44) in 0:14. Filename: C:\Music\Example Artist\Sample Album\01 - First Song.flac
+  AccurateRip: Accurate (confidence 42)     [Pass 1]
+  CRC32: 3A7F19C2     AccurateRip CRC: 91B04D6E (CRCv2)     [DiscID: 010-0019d2f4-00a3c81b-7d0a920a-1]
+  AccurateRip Verified Confidence 42 [CRCv2 91b04d6e]
+
+Track 2:  Ripped LBA 16852 to 35010 (4:02) in 0:12. Filename: C:\Music\Example Artist\Sample Album\02 - Second Song.flac
+  AccurateRip: Accurate (confidence 42)     [Pass 1]
+  CRC32: B854AB4D     AccurateRip CRC: E5C8EE6F (CRCv2)     [DiscID: 010-0019d2f4-00a3c81b-7d0a920a-2]
+  AccurateRip Verified Confidence 42 [CRCv2 e5c8ee6f]
+
+Track 3:  Ripped LBA 35010 to 52340 (3:51) in 0:12. Filename: C:\Music\Example Artist\Sample Album\03 - Third Song.flac
+  AccurateRip: Accurate (confidence 42)     [Pass 1]
+  CRC32: 7DDF48FC     AccurateRip CRC: 423AFC47 (CRCv2)     [DiscID: 010-0019d2f4-00a3c81b-7d0a920a-3]
+  AccurateRip Verified Confidence 42 [CRCv2 423afc47]
+
+Track 4:  Ripped LBA 52340 to 68125 (3:30) in 0:11. Filename: C:\Music\Example Artist\Sample Album\04 - Fourth Song.flac
+  AccurateRip: Accurate (confidence 41)     [Pass 1]
+  CRC32: 6BFE2E8A     AccurateRip CRC: 676A353B (CRCv2)     [DiscID: 010-0019d2f4-00a3c81b-7d0a920a-4]
+  AccurateRip Verified Confidence 41 [CRCv2 676a353b]
+
+Track 5:  Ripped LBA 68125 to 89430 (4:44) in 0:15. Filename: C:\Music\Example Artist\Sample Album\05 - Fifth Song.flac
+  AccurateRip: Accurate (confidence 42)     [Pass 1]
+  CRC32: 73135CCC     AccurateRip CRC: F4C17FCC (CRCv2)     [DiscID: 010-0019d2f4-00a3c81b-7d0a920a-5]
+  AccurateRip Verified Confidence 42 [CRCv2 f4c17fcc]
+
+Track 6:  Ripped LBA 89430 to 104012 (3:14) in 0:10. Filename: C:\Music\Example Artist\Sample Album\06 - Sixth Song.flac
+  AccurateRip: Accurate (confidence 42)     [Pass 1]
+  CRC32: B4D9B54C     AccurateRip CRC: 0D4CCAD2 (CRCv2)     [DiscID: 010-0019d2f4-00a3c81b-7d0a920a-6]
+  AccurateRip Verified Confidence 42 [CRCv2 d4ccad2]
+
+Track 7:  Ripped LBA 104012 to 121500 (3:53) in 0:12. Filename: C:\Music\Example Artist\Sample Album\07 - Seventh Song.flac
+  AccurateRip: Accurate (confidence 42)     [Pass 1]
+  CRC32: DB8C9EA0     AccurateRip CRC: 39E7EA82 (CRCv2)     [DiscID: 010-0019d2f4-00a3c81b-7d0a920a-7]
+  AccurateRip Verified Confidence 42 [CRCv2 39e7ea82]
+
+Track 8:  Ripped LBA 121500 to 139875 (4:05) in 2:07. Filename: C:\Music\Example Artist\Sample Album\08 - Eighth Song.flac
+  Secure  [Pass 1 & 2, Ultra 1 to 3]
+  CRC32: 9283B65C     AccurateRip CRC: 9D85CE66 (CRCv2)     [DiscID: 010-0019d2f4-00a3c81b-7d0a920a-8]
+
+Track 9:  Ripped LBA 139875 to 158220 (4:04) in 4:41. Filename: C:\Music\Example Artist\Sample Album\09 - Ninth Song.flac
+  AccurateRip: Inaccurate (confidence 42) Secure (Warning)  [Pass 1 & 2, Ultra 1 to 3, Re-Rip 7 Frames]
+  CRC32: 9463C1B0     AccurateRip CRC: 79A55528 (CRCv2)     [DiscID: 010-0019d2f4-00a3c81b-7d0a920a-9]
+
+Track 10:  Ripped LBA 158220 to 175322 (3:48) in 6:12. Filename: C:\Music\Example Artist\Sample Album\10 - Tenth Song.flac
+  Insecure  [Pass 1 & 2, Ultra 1 to 2, Re-Rip 208 Frames]
+  ** Aborted: Have to ReRip 208 Frames, Re-Rip Limit Set to 100 Frames
+
+--------------
+
+10 Tracks Ripped: 8 Accurate, 1 Secure, 1 Inaccurate

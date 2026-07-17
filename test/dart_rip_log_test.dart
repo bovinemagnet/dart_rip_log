@@ -1133,10 +1133,12 @@ CRC32 hash : AABBCCDD
       expect(log.errors.any((e) => e.contains('not yet implemented')), isFalse);
     });
 
-    test('dBpoweramp: dispatches and reports not-implemented', () {
-      final log = parseRipLog('dBpoweramp CD Ripper Release 17.5\ncontent');
+    test('dBpoweramp: dispatches to the full parser', () {
+      final log = parseRipLog(
+          'dBpoweramp Release 17.5 Digital Audio Extraction Log from x\n');
       expect(log.logFormat, RipLogFormat.dbPoweramp);
-      expect(log.errors.any((e) => e.contains('not yet implemented')), isTrue);
+      expect(log.toolVersion, '17.5');
+      expect(log.errors.any((e) => e.contains('not yet implemented')), isFalse);
     });
   });
 }
