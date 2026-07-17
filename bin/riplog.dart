@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_rip_log/dart_rip_log.dart';
+import 'package:dart_rip_log/src/encoding.dart';
 
 /// Must match `version:` in pubspec.yaml — pinned by a test in
 /// `test/cli_test.dart` so the two cannot drift.
@@ -164,8 +165,8 @@ Future<void> main(List<String> args) async {
     final path = expanded[idx];
     final String content;
     try {
-      content =
-          path == '-' ? await _readStdin() : await File(path).readAsString();
+      content = decodeLogBytes(
+          path == '-' ? await _readStdin() : await File(path).readAsBytes());
     } on FileSystemException catch (e) {
       stderr.writeln('Cannot read $path: ${e.message}');
       exit(2);
@@ -304,12 +305,12 @@ bool _keepTrack(RipLogTrack t, _Filter filter) {
   }
 }
 
-Future<String> _readStdin() async {
-  final buf = StringBuffer();
-  await for (final chunk in stdin.transform(utf8.decoder)) {
-    buf.write(chunk);
+Future<List<int>> _readStdin() async {
+  final buf = <int>[];
+  await for (final chunk in stdin) {
+    buf.addAll(chunk);
   }
-  return buf.toString();
+  return buf;
 }
 
 void _printSummary(RipLog log, _Filter filter, _Style style) {

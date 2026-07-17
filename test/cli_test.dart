@@ -12,13 +12,17 @@ import 'package:test/test.dart';
 void main() {
   final riplog = ['run', 'bin/riplog.dart'];
 
-  Future<ProcessResult> run(List<String> args, {String? stdinText}) async {
+  Future<ProcessResult> run(List<String> args,
+      {String? stdinText, List<int>? stdinBytes}) async {
     final proc = await Process.start(
       Platform.resolvedExecutable,
       [...riplog, ...args],
       workingDirectory: Directory.current.path,
     );
-    if (stdinText != null) {
+    if (stdinBytes != null) {
+      proc.stdin.add(stdinBytes);
+      await proc.stdin.close();
+    } else if (stdinText != null) {
       proc.stdin.write(stdinText);
       await proc.stdin.close();
     } else {
@@ -303,6 +307,38 @@ void main() {
       final r = await run(['--version']);
       expect(r.exitCode, 0);
       expect(r.stdout.toString().trim(), 'riplog ${pubspecVersion!.group(1)}');
+    });
+
+    group('encoding detection (#29)', () {
+      List<int> utf16LeBytes(String s) {
+        final bytes = <int>[0xFF, 0xFE];
+        for (final unit in s.codeUnits) {
+          bytes.add(unit & 0xFF);
+          bytes.add((unit >> 8) & 0xFF);
+        }
+        return bytes;
+      }
+
+      test('UTF-16LE file parses identically to the UTF-8 fixture', () async {
+        final content = File('test/fixtures/eac_sample.log').readAsStringSync();
+        final dir = Directory.systemTemp.createTempSync('riplog_cli_enc');
+        addTearDown(() => dir.deleteSync(recursive: true));
+        final path = '${dir.path}/utf16le.log';
+        File(path).writeAsBytesSync(utf16LeBytes(content));
+
+        final r = await run(['-q', path]);
+        final parts = r.stdout.toString().trim().split('\t');
+        expect(parts[1], 'eac');
+        expect(parts[2], '3');
+      });
+
+      test('UTF-16LE stdin parses identically to the UTF-8 fixture', () async {
+        final content = File('test/fixtures/eac_sample.log').readAsStringSync();
+        final r = await run(['-q', '-'], stdinBytes: utf16LeBytes(content));
+        final parts = r.stdout.toString().trim().split('\t');
+        expect(parts[1], 'eac');
+        expect(parts[2], '3');
+      });
     });
 
     test('large JSON output is not truncated when piped', () async {

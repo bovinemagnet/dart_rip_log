@@ -1010,16 +1010,18 @@ CRC32 hash : AABBCCDD
       expect(() => parseRipLog(bad), returnsNormally);
     });
 
-    test('parseRipLogFile on non-UTF-8 binary file throws FileSystemException',
+    test('parseRipLogFile on non-UTF-8 binary file → unknown format, no throw',
         () async {
+      // Since #29 the decoder falls back to Latin-1 on non-UTF-8 bytes, so
+      // binary garbage parses to an unknown-format RipLog instead of
+      // throwing at the I/O layer.
       final tmpDir = await Directory.systemTemp.createTemp('riplog_bad_');
       final tmpFile = File('${tmpDir.path}/bad.log');
       await tmpFile.writeAsBytes(List<int>.generate(1024, (i) => i % 256));
       try {
-        await expectLater(
-          parseRipLogFile(tmpFile.path),
-          throwsA(isA<FileSystemException>()),
-        );
+        final log = await parseRipLogFile(tmpFile.path);
+        expect(log.logFormat, RipLogFormat.unknown);
+        expect(log.tracks, isEmpty);
       } finally {
         await tmpDir.delete(recursive: true);
       }

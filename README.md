@@ -157,9 +157,12 @@ Colour output respects `NO_COLOR` and `stdout.hasTerminal` by default.
 
 The library never throws on malformed *content*. It may still throw at the
 file-I/O layer — for example, `parseRipLogFile` will throw a
-`FileSystemException` when given a non-UTF-8 binary file. On truncated,
-garbled, or partially-unknown input the parser returns a `RipLog` with
-whatever it could extract; any parsing warnings are collected in
+`FileSystemException` when the file does not exist or cannot be read. File
+input is decoded with BOM detection: UTF-16LE (the default encoding of real
+EAC logs), UTF-16BE, and UTF-8 with BOM are handled transparently, and
+BOM-less input falls back from UTF-8 to Latin-1 rather than throwing. On
+truncated, garbled, or partially-unknown input the parser returns a `RipLog`
+with whatever it could extract; any parsing warnings are collected in
 `RipLog.errors`.
 
 ## JSON shape
