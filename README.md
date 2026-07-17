@@ -5,7 +5,8 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
 A pure Dart library that parses CD rip log files from the major CD-ripping tools
-(EAC, XLD) into structured, JSON-serialisable quality data. Extracts
+(EAC, XLD, whipper, CUERipper, dBpoweramp) into structured, JSON-serialisable
+quality data. Extracts
 AccurateRip verification status, CRC-32 checksums, peak levels, track quality,
 and per-track error statistics.
 

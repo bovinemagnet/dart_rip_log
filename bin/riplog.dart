@@ -39,7 +39,8 @@ class _Style {
 }
 
 void _printUsage(IOSink sink) {
-  sink.writeln('riplog — parse EAC / XLD rip logs.');
+  sink.writeln(
+      'riplog — parse EAC / XLD / whipper / CUERipper / dBpoweramp rip logs.');
   sink.writeln('');
   sink.writeln('Usage:');
   sink.writeln('  riplog [options] <file-or-dir> [<file-or-dir>...]');
