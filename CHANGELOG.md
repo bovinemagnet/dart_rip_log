@@ -14,6 +14,12 @@
   `"ASUS BW-16D1HT"`) and the adapter/ID text populates the previously
   never-set `drive.adapter` (e.g. `"Adapter: 1   ID: 0"`). JSON-shape
   change; goldens regenerated.
+- **EAC AccurateRip summary variants** (#32): the footer summary is now
+  captured for negative and mixed outcomes (`No tracks could be
+  verified as accurate`, `Some tracks could not be verified as
+  accurate`, `N track(s) accurately ripped` / `N track(s) could not be
+  verified as accurate`), not just the all-verified line. Multi-line
+  summaries are joined with `\n` in `accurateRipSummary`.
 - **CLI exit-code change** (#30): under the default `--fail-on any`,
   unparseable input (unknown format or zero tracks) now exits 1
   instead of 0, so a corrupt or non-log file can no longer produce a

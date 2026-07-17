@@ -23,8 +23,17 @@ final _reMediaType = RegExp(r'Used media\s*:\s*(.+)', caseSensitive: false);
 // Footer regexes
 // ---------------------------------------------------------------------------
 
-final _reArSummary =
-    RegExp(r'^(All tracks accurately ripped.*)', caseSensitive: false);
+// EAC footer AccurateRip summary phrasings. Mixed results emit one line
+// per outcome (e.g. "3 track(s) accurately ripped" followed by
+// "2 track(s) could not be verified as accurate") — all matching lines
+// are collected and joined with '\n'.
+final _reArSummary = RegExp(
+    r'^((?:All tracks accurately ripped'
+    r'|No tracks could be verified as accurate'
+    r'|Some tracks could not be verified as accurate'
+    r'|\d+\s+track\(s\)\s+accurately ripped'
+    r'|\d+\s+track\(s\)\s+could not be verified as accurate).*)',
+    caseSensitive: false);
 final _reIntegrityHash =
     RegExp(r'==== Log checksum\s+([0-9A-Fa-f]+)', caseSensitive: false);
 
@@ -83,7 +92,7 @@ RipLog parseEac(String content) {
   bool? overread;
   String? gapHandling;
   String? mediaType;
-  String? arSummary;
+  final arSummaryLines = <String>[];
   String? integrityHash;
   final parsingErrors = <String>[];
 
@@ -185,12 +194,10 @@ RipLog parseEac(String content) {
       }
     }
     // Footer fields can also appear in the "header" area (after all tracks)
-    if (arSummary == null) {
-      final m = _reArSummary.firstMatch(trimmed);
-      if (m != null) {
-        arSummary = m.group(1)?.trim();
-        continue;
-      }
+    final mArSummary = _reArSummary.firstMatch(trimmed);
+    if (mArSummary != null) {
+      arSummaryLines.add(mArSummary.group(1)!.trim());
+      continue;
     }
     if (integrityHash == null) {
       final m = _reIntegrityHash.firstMatch(trimmed);
@@ -215,16 +222,15 @@ RipLog parseEac(String content) {
   if (trackSections.isNotEmpty) {
     for (final line in trackSections.last) {
       final trimmed = line.trim();
-      if (arSummary == null) {
-        final m = _reArSummary.firstMatch(trimmed);
-        if (m != null) arSummary = m.group(1)?.trim();
-      }
+      final m = _reArSummary.firstMatch(trimmed);
+      if (m != null) arSummaryLines.add(m.group(1)!.trim());
       if (integrityHash == null) {
-        final m = _reIntegrityHash.firstMatch(trimmed);
-        if (m != null) integrityHash = m.group(1)?.trim();
+        final mHash = _reIntegrityHash.firstMatch(trimmed);
+        if (mHash != null) integrityHash = mHash.group(1)?.trim();
       }
     }
   }
+  final arSummary = arSummaryLines.isEmpty ? null : arSummaryLines.join('\n');
 
   final drive = driveName != null
       ? DriveInfo(
