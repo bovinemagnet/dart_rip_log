@@ -37,6 +37,25 @@ final _reArSummary = RegExp(
 final _reIntegrityHash =
     RegExp(r'==== Log checksum\s+([0-9A-Fa-f]+)', caseSensitive: false);
 
+// EAC 0.95–0.99 put per-track AccurateRip results in a footer block:
+//   Track  1  accurately ripped (confidence 2)  [1A2B3C4D]
+//   Track  2  cannot be verified as accurate  [5E6F7A8B]
+final _reFooterArVerified = RegExp(
+    r'^Track\s+(\d+)\s+accurately ripped\s*'
+    r'\(confidence\s+(\d+)\)\s+\[([0-9A-Fa-f]+)\]',
+    caseSensitive: false);
+final _reFooterArCannot = RegExp(
+    r'^Track\s+(\d+)\s+cannot be verified as accurate\s+\[([0-9A-Fa-f]+)\]',
+    caseSensitive: false);
+
+/// Per-track AccurateRip result parsed from an EAC 0.95–0.99 footer block.
+class _FooterArResult {
+  final AccurateRipStatus status;
+  final int? confidence;
+  final String crcV1;
+  const _FooterArResult(this.status, this.confidence, this.crcV1);
+}
+
 // ---------------------------------------------------------------------------
 // Track-section regexes
 // ---------------------------------------------------------------------------
@@ -104,8 +123,37 @@ RipLog parseEac(String content) {
   bool inTrackArea = false;
   bool isRangeRip = false;
 
+  // Footer AR block results (EAC 0.95–0.99 style), keyed by track number.
+  // These lines are excluded from the track sections so they cannot
+  // overwrite the last track's own AR fields.
+  final footerAr = <int, _FooterArResult>{};
+
   for (final line in lines) {
     final trimmed = line.trim();
+    final mFooterVerified = _reFooterArVerified.firstMatch(trimmed);
+    if (mFooterVerified != null) {
+      final n = int.tryParse(mFooterVerified.group(1)!);
+      if (n != null) {
+        footerAr[n] = _FooterArResult(
+          AccurateRipStatus.verified,
+          int.tryParse(mFooterVerified.group(2)!),
+          mFooterVerified.group(3)!.toUpperCase(),
+        );
+      }
+      continue;
+    }
+    final mFooterCannot = _reFooterArCannot.firstMatch(trimmed);
+    if (mFooterCannot != null) {
+      final n = int.tryParse(mFooterCannot.group(1)!);
+      if (n != null) {
+        footerAr[n] = _FooterArResult(
+          AccurateRipStatus.mismatch,
+          null,
+          mFooterCannot.group(2)!.toUpperCase(),
+        );
+      }
+      continue;
+    }
     if (_reTrackHeader.hasMatch(trimmed)) {
       inTrackArea = true;
       if (currentTrack != null) trackSections.add(currentTrack);
@@ -211,8 +259,8 @@ RipLog parseEac(String content) {
   // ---- Parse tracks ----
   final tracks = <RipLogTrack>[];
   for (final section in trackSections) {
-    final track =
-        _parseTrackSection(section, parsingErrors, isRange: isRangeRip);
+    final track = _parseTrackSection(section, parsingErrors,
+        isRange: isRangeRip, footerAr: footerAr);
     if (track != null) tracks.add(track);
   }
 
@@ -267,7 +315,7 @@ RipLog parseEac(String content) {
 // ---------------------------------------------------------------------------
 
 RipLogTrack? _parseTrackSection(List<String> lines, List<String> parsingErrors,
-    {bool isRange = false}) {
+    {bool isRange = false, Map<int, _FooterArResult> footerAr = const {}}) {
   int? trackNumber = isRange ? 1 : null;
   String? filename;
   double? peakLevel;
@@ -416,6 +464,15 @@ RipLogTrack? _parseTrackSection(List<String> lines, List<String> parsingErrors,
   if (trackNumber == null) {
     parsingErrors.add('Could not extract track number from section');
     return null;
+  }
+
+  // Apply a footer-block AR result (EAC 0.95–0.99 style) when the track's
+  // own section carried no inline AR line.
+  final footerResult = footerAr[trackNumber];
+  if (footerResult != null && arStatus == AccurateRipStatus.notChecked) {
+    arStatus = footerResult.status;
+    arConfidence = footerResult.confidence;
+    arCrcV1 = footerResult.crcV1;
   }
 
   return RipLogTrack(

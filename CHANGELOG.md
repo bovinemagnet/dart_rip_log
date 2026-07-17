@@ -20,6 +20,11 @@
   accurate`, `N track(s) accurately ripped` / `N track(s) could not be
   verified as accurate`), not just the all-verified line. Multi-line
   summaries are joined with `\n` in `accurateRipSummary`.
+- **EAC 0.95–0.99 footer AccurateRip block** (#33): per-track AR
+  results emitted as a footer block (`Track  1  accurately ripped
+  (confidence 2)  [CRC]`) are now mapped to the right tracks by number.
+  Previously every footer line overwrote the *last* track's AR fields
+  while the others stayed `notChecked`.
 - **CLI exit-code change** (#30): under the default `--fail-on any`,
   unparseable input (unknown format or zero tracks) now exits 1
   instead of 0, so a corrupt or non-log file can no longer produce a

@@ -72,4 +72,60 @@ void main() {
       expect(log.accurateRipSummary, 'All tracks accurately ripped');
     });
   });
+
+  group('EAC 0.95–0.99 footer AccurateRip block (#33)', () {
+    // Older EAC puts per-track AR results in a footer block instead of
+    // inline under each track.
+    final content = 'Exact Audio Copy V0.99 from 23. October 2019\n'
+        '\n'
+        'EAC extraction logfile from 15. March 2026\n'
+        '\n'
+        'Used drive            : ASUS BW-16D1HT   Adapter: 1   ID: 0\n'
+        '\n'
+        'Track  1\n'
+        '\n'
+        '     Filename C:\\Music\\01 - One.flac\n'
+        '     Peak level 96.2 %\n'
+        '     Copy CRC 882B01BE\n'
+        '     Copy OK\n'
+        '\n'
+        'Track  2\n'
+        '\n'
+        '     Filename C:\\Music\\02 - Two.flac\n'
+        '     Peak level 75.0 %\n'
+        '     Copy CRC AABBCCDD\n'
+        '     Copy OK\n'
+        '\n'
+        '---- AccurateRip summary ----\n'
+        '\n'
+        'Track  1  accurately ripped (confidence 2)  [1A2B3C4D]\n'
+        'Track  2  cannot be verified as accurate  [5E6F7A8B]\n'
+        '\n'
+        'End of status report\n';
+
+    test('footer AR results map to the right tracks by number', () {
+      final log = parseRipLog(content);
+      expect(log.tracks, hasLength(2));
+
+      final t1 = log.tracks[0];
+      expect(t1.accurateRipStatus, AccurateRipStatus.verified);
+      expect(t1.accurateRipConfidence, 2);
+      expect(t1.accurateRipCrcV1, '1A2B3C4D');
+
+      final t2 = log.tracks[1];
+      expect(t2.accurateRipStatus, AccurateRipStatus.mismatch);
+      expect(t2.accurateRipCrcV1, '5E6F7A8B');
+      expect(t2.accurateRipConfidence, isNull);
+    });
+
+    test('footer AR lines do not pollute the last track\'s own fields', () {
+      final log = parseRipLog(content);
+      final t2 = log.tracks[1];
+      // Without the fix the last track was overwritten by every footer
+      // line in turn — track 2 must keep its own copy CRC and not
+      // inherit track 1's confidence.
+      expect(t2.copyCrc, 'AABBCCDD');
+      expect(t2.accurateRipCrcV1, isNot('1A2B3C4D'));
+    });
+  });
 }
