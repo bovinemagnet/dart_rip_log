@@ -12,13 +12,17 @@ import 'package:test/test.dart';
 void main() {
   final riplog = ['run', 'bin/riplog.dart'];
 
-  Future<ProcessResult> run(List<String> args, {String? stdinText}) async {
+  Future<ProcessResult> run(List<String> args,
+      {String? stdinText, List<int>? stdinBytes}) async {
     final proc = await Process.start(
       Platform.resolvedExecutable,
       [...riplog, ...args],
       workingDirectory: Directory.current.path,
     );
-    if (stdinText != null) {
+    if (stdinBytes != null) {
+      proc.stdin.add(stdinBytes);
+      await proc.stdin.close();
+    } else if (stdinText != null) {
       proc.stdin.write(stdinText);
       await proc.stdin.close();
     } else {
@@ -240,6 +244,48 @@ void main() {
       expect(r.exitCode, 0);
     });
 
+    group('unparseable input exit policy (#30)', () {
+      late String garbagePath;
+
+      setUpAll(() {
+        final dir = Directory.systemTemp.createTempSync('riplog_cli_garbage');
+        addTearDown(() => dir.deleteSync(recursive: true));
+        garbagePath = '${dir.path}/garbage.log';
+        File(garbagePath)
+            .writeAsStringSync('this is not a rip log\njust noise\n');
+      });
+
+      test('--fail-on any (default) → exit 1 on unknown-format input',
+          () async {
+        final r = await run(['-q', garbagePath]);
+        expect(r.exitCode, 1);
+      });
+
+      test('--fail-on never → exit 0 on unknown-format input', () async {
+        final r = await run(['--fail-on', 'never', '-q', garbagePath]);
+        expect(r.exitCode, 0);
+      });
+
+      test('--fail-on mismatch → exit 0 on unknown-format input', () async {
+        final r = await run(['--fail-on', 'mismatch', '-q', garbagePath]);
+        expect(r.exitCode, 0);
+      });
+
+      test('--fail-on errors → exit 0 on unknown-format input', () async {
+        final r = await run(['--fail-on', 'errors', '-q', garbagePath]);
+        expect(r.exitCode, 0);
+      });
+
+      test('--fail-on any → exit 1 on a zero-track log of known format',
+          () async {
+        // A recognisable EAC header with no track sections at all.
+        final r = await run(['--fail-on', 'any', '-q', '-'],
+            stdinText: 'Exact Audio Copy V1.6 from 23. October 2019\n\n'
+                'EAC extraction logfile from 15. March 2026\n');
+        expect(r.exitCode, 1);
+      });
+    });
+
     test('invalid --filter value → exit 2', () async {
       final r =
           await run(['--filter', 'bogus', 'test/fixtures/eac_sample.log']);
@@ -303,6 +349,38 @@ void main() {
       final r = await run(['--version']);
       expect(r.exitCode, 0);
       expect(r.stdout.toString().trim(), 'riplog ${pubspecVersion!.group(1)}');
+    });
+
+    group('encoding detection (#29)', () {
+      List<int> utf16LeBytes(String s) {
+        final bytes = <int>[0xFF, 0xFE];
+        for (final unit in s.codeUnits) {
+          bytes.add(unit & 0xFF);
+          bytes.add((unit >> 8) & 0xFF);
+        }
+        return bytes;
+      }
+
+      test('UTF-16LE file parses identically to the UTF-8 fixture', () async {
+        final content = File('test/fixtures/eac_sample.log').readAsStringSync();
+        final dir = Directory.systemTemp.createTempSync('riplog_cli_enc');
+        addTearDown(() => dir.deleteSync(recursive: true));
+        final path = '${dir.path}/utf16le.log';
+        File(path).writeAsBytesSync(utf16LeBytes(content));
+
+        final r = await run(['-q', path]);
+        final parts = r.stdout.toString().trim().split('\t');
+        expect(parts[1], 'eac');
+        expect(parts[2], '3');
+      });
+
+      test('UTF-16LE stdin parses identically to the UTF-8 fixture', () async {
+        final content = File('test/fixtures/eac_sample.log').readAsStringSync();
+        final r = await run(['-q', '-'], stdinBytes: utf16LeBytes(content));
+        final parts = r.stdout.toString().trim().split('\t');
+        expect(parts[1], 'eac');
+        expect(parts[2], '3');
+      });
     });
 
     test('large JSON output is not truncated when piped', () async {

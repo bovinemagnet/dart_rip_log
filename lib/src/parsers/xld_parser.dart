@@ -1,5 +1,6 @@
 import '../models.dart';
 import '../utils.dart';
+import 'toc_parser.dart';
 
 // ---------------------------------------------------------------------------
 // Header regexes
@@ -161,9 +162,10 @@ RipLog parseXld(String content) {
   }
 
   // ---- Parse tracks ----
+  final toc = parseTocTable(lines);
   final tracks = <RipLogTrack>[];
   for (final section in trackSections) {
-    final track = _parseTrackSection(section, parsingErrors);
+    final track = _parseTrackSection(section, parsingErrors, toc);
     if (track != null) tracks.add(track);
   }
 
@@ -191,7 +193,7 @@ RipLog parseXld(String content) {
 // ---------------------------------------------------------------------------
 
 RipLogTrack? _parseTrackSection(
-    List<String> lines, List<String> parsingErrors) {
+    List<String> lines, List<String> parsingErrors, Map<int, TocEntry> toc) {
   int? trackNumber;
   String? filename;
   double? peakLevel;
@@ -307,6 +309,13 @@ RipLogTrack? _parseTrackSection(
     return null;
   }
 
+  final tocEntry = toc[trackNumber];
+  final errors = TrackErrors(
+    readErrors: readErrors,
+    jitterErrors: jitterErrors,
+    damagedSectors: damagedSectors,
+  );
+
   return RipLogTrack(
     trackNumber: trackNumber,
     filename: filename,
@@ -317,12 +326,15 @@ RipLogTrack? _parseTrackSection(
     accurateRipCrcV1: arCrcV1,
     accurateRipCrcV2: arCrcV2,
     accurateRipConfidence: arConfidence,
-    copyOk: arStatus == AccurateRipStatus.verified,
-    errors: TrackErrors(
-      readErrors: readErrors,
-      jitterErrors: jitterErrors,
-      damagedSectors: damagedSectors,
-    ),
+    // XLD has no "Copy OK" concept — a clean rip of a disc that is not
+    // in the AccurateRip database is still a good copy, so copyOk is
+    // derived from the track reporting zero errors (see
+    // RipLogTrack.copyOk).
+    copyOk: !errors.hasErrors,
+    errors: errors,
     logFormat: RipLogFormat.xld,
+    startSector: tocEntry?.startSector,
+    lengthSectors: tocEntry?.lengthSectors,
+    durationSeconds: tocEntry?.durationSeconds,
   );
 }

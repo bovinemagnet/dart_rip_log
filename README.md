@@ -157,10 +157,17 @@ Colour output respects `NO_COLOR` and `stdout.hasTerminal` by default.
 
 The library never throws on malformed *content*. It may still throw at the
 file-I/O layer — for example, `parseRipLogFile` will throw a
-`FileSystemException` when given a non-UTF-8 binary file. On truncated,
-garbled, or partially-unknown input the parser returns a `RipLog` with
-whatever it could extract; any parsing warnings are collected in
-`RipLog.errors`.
+`FileSystemException` when the file does not exist or cannot be read. File
+input is decoded with BOM detection: UTF-16LE (the default encoding of real
+EAC logs), UTF-16BE, and UTF-8 with BOM are handled transparently, and
+BOM-less input falls back from UTF-8 to Latin-1 rather than throwing. A
+deliberate consequence of the Latin-1 fallback is that every byte sequence
+decodes: a binary or otherwise non-log file no longer throws (as it did
+before 0.2.0) — it parses to an unknown-format `RipLog` with zero tracks,
+which the `riplog` CLI treats as a failure under the default
+`--fail-on any`. On truncated, garbled, or partially-unknown input the
+parser returns a `RipLog` with whatever it could extract; any parsing
+warnings are collected in `RipLog.errors`.
 
 ## JSON shape
 
@@ -183,6 +190,12 @@ lengthSectors, durationSeconds`. Numeric peak/quality values are fractions in
 `[0.0, 1.0]`. Dates are ISO-8601 strings. Optional fields are omitted when
 null — so `quality`, `logFormat`, `tracks`, and `errors` are always present,
 while the rest appear only when the log supplied them.
+
+`copyOk` is format-specific: for EAC it reflects the per-track `Copy OK`
+line; XLD has no equivalent concept, so for XLD tracks it is derived —
+`true` when the track's `Statistics` block reports zero errors,
+independent of AccurateRip status (a clean rip of a disc that is not in
+the AccurateRip database is still a good copy).
 
 `source` (byte size, line count, parser name, parse timestamp) is populated
 only by `parseRipLogFile`, not by `parseRipLog`.

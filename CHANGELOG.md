@@ -1,5 +1,54 @@
 # Changelog
 
+## 0.2.0 (unreleased)
+
+- **Encoding detection** (#29): `parseRipLogFile` and the CLI now sniff
+  the byte-order mark before decoding — UTF-16LE (the default encoding
+  of real EAC logs), UTF-16BE, and UTF-8 with BOM all parse
+  transparently; BOM-less input falls back from UTF-8 to Latin-1
+  instead of throwing. Behaviour change: a non-UTF-8 binary file no
+  longer throws a `FileSystemException`; it parses to an
+  unknown-format `RipLog`.
+- **EAC drive parsing** (#31): the `Used drive` line is split on
+  `Adapter:` — `drive.name` now holds only the drive model (e.g.
+  `"ASUS BW-16D1HT"`) and the adapter/ID text populates the previously
+  never-set `drive.adapter` (e.g. `"Adapter: 1   ID: 0"`). JSON-shape
+  change; goldens regenerated.
+- **EAC AccurateRip summary variants** (#32): the footer summary is now
+  captured for negative and mixed outcomes (`No tracks could be
+  verified as accurate`, `Some tracks could not be verified as
+  accurate`, `N track(s) accurately ripped` / `N track(s) could not be
+  verified as accurate`), not just the all-verified line. Multi-line
+  summaries are joined with `\n` in `accurateRipSummary`.
+- **EAC 0.95–0.99 footer AccurateRip block** (#33): per-track AR
+  results emitted as a footer block (`Track  1  accurately ripped
+  (confidence 2)  [CRC]`) are now mapped to the right tracks by number.
+  Previously every footer line overwrote the *last* track's AR fields
+  while the others stayed `notChecked`.
+- **TOC table parsing** (#34): both the EAC and XLD parsers now read
+  the `TOC of the extracted CD` table and populate `startSector`,
+  `lengthSectors`, and `durationSeconds` on each track (fields added to
+  the model in 0.1.0 but never emitted). `durationSeconds` comes from
+  the TOC length column (minutes/seconds/frames, 75 frames per second),
+  falling back to `lengthSectors / 75`. Goldens regenerated.
+- **`LogSource.byteSize` fix** (#35): now reports the file's on-disk
+  byte size as documented, not the decoded string's UTF-16 code-unit
+  count — the old value was wrong for any non-ASCII log and ~2× off
+  for UTF-16LE EAC logs.
+- **EAC extraction time-of-day** (#36): `extractionDate` now includes
+  the hour and minute from date lines like `15. March 2026, 20:32`.
+  Date-only lines still yield midnight.
+- **XLD `copyOk` semantics** (#37): no longer conflated with
+  AccurateRip verification. XLD has no "Copy OK" concept, so `copyOk`
+  is now derived from the track's `Statistics` block reporting zero
+  errors — a clean rip of a disc that is not in the AccurateRip
+  database no longer reports `copyOk: false`.
+- **CLI exit-code change** (#30): under the default `--fail-on any`,
+  unparseable input (unknown format or zero tracks) now exits 1
+  instead of 0, so a corrupt or non-log file can no longer produce a
+  green build. `--fail-on mismatch`, `errors`, and `never` are
+  unchanged.
+
 ## 0.1.1
 
 - `compareRipLogs` now diffs `testAndCopy`, `accurateRipDiscId`, and

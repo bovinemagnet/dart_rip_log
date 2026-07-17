@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_rip_log/dart_rip_log.dart';
+import 'package:dart_rip_log/src/encoding.dart';
 
 /// Must match `version:` in pubspec.yaml — pinned by a test in
 /// `test/cli_test.dart` so the two cannot drift.
@@ -62,8 +63,9 @@ void _printUsage(IOSink sink) {
   sink.writeln('');
   sink.writeln('Exit codes:');
   sink.writeln('  0  --fail-on policy not triggered');
-  sink.writeln('  1  --fail-on policy triggered (default: any AR mismatch or');
-  sink.writeln('     track with error counts > 0)');
+  sink.writeln('  1  --fail-on policy triggered (default: any AR mismatch,');
+  sink.writeln('     track with error counts > 0, or unparseable input —');
+  sink.writeln('     unknown format / zero tracks)');
   sink.writeln('  2  bad arguments or file I/O error');
 }
 
@@ -164,8 +166,8 @@ Future<void> main(List<String> args) async {
     final path = expanded[idx];
     final String content;
     try {
-      content =
-          path == '-' ? await _readStdin() : await File(path).readAsString();
+      content = decodeLogBytes(
+          path == '-' ? await _readStdin() : await File(path).readAsBytes());
     } on FileSystemException catch (e) {
       stderr.writeln('Cannot read $path: ${e.message}');
       exit(2);
@@ -286,7 +288,13 @@ bool _failOnHit(_FailOn policy, RipLog log) {
     case _FailOn.errors:
       return hasErrors;
     case _FailOn.any:
-      return hasMismatch || hasErrors || !isFullyVerified(log);
+      // Unparseable input (unknown format or no tracks) is a failure under
+      // `any` — a corrupt or non-log file must not produce a green build.
+      return hasMismatch ||
+          hasErrors ||
+          log.logFormat == RipLogFormat.unknown ||
+          log.tracks.isEmpty ||
+          !isFullyVerified(log);
   }
 }
 
@@ -304,12 +312,12 @@ bool _keepTrack(RipLogTrack t, _Filter filter) {
   }
 }
 
-Future<String> _readStdin() async {
-  final buf = StringBuffer();
-  await for (final chunk in stdin.transform(utf8.decoder)) {
-    buf.write(chunk);
+Future<List<int>> _readStdin() async {
+  final buf = <int>[];
+  await for (final chunk in stdin) {
+    buf.addAll(chunk);
   }
-  return buf.toString();
+  return buf;
 }
 
 void _printSummary(RipLog log, _Filter filter, _Style style) {

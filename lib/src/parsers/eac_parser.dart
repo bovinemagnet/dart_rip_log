@@ -1,5 +1,6 @@
 import '../models.dart';
 import '../utils.dart';
+import 'toc_parser.dart';
 
 // ---------------------------------------------------------------------------
 // Header regexes
@@ -7,9 +8,13 @@ import '../utils.dart';
 
 final _reVersion =
     RegExp(r'Exact Audio Copy\s+(V[\d.]+)', caseSensitive: false);
-final _reDate = RegExp(r'EAC extraction logfile from\s+(\d+\.\s+\w+\s+\d{4})',
+// Date with optional time-of-day: "15. March 2026" or "15. March 2026, 20:32".
+final _reDate = RegExp(
+    r'EAC extraction logfile from\s+'
+    r'(\d+\.\s+\w+\s+\d{4}(?:\s*,\s*\d{1,2}:\d{2})?)',
     caseSensitive: false);
 final _reDrive = RegExp(r'Used drive\s*:\s*(.+)', caseSensitive: false);
+final _reDriveAdapter = RegExp(r'Adapter\s*:', caseSensitive: false);
 final _reReadMode = RegExp(r'Read mode\s*:\s*(.+)', caseSensitive: false);
 final _reReadOffset =
     RegExp(r'Read offset correction\s*:\s*(-?\d+)', caseSensitive: false);
@@ -22,10 +27,38 @@ final _reMediaType = RegExp(r'Used media\s*:\s*(.+)', caseSensitive: false);
 // Footer regexes
 // ---------------------------------------------------------------------------
 
-final _reArSummary =
-    RegExp(r'^(All tracks accurately ripped.*)', caseSensitive: false);
+// EAC footer AccurateRip summary phrasings. Mixed results emit one line
+// per outcome (e.g. "3 track(s) accurately ripped" followed by
+// "2 track(s) could not be verified as accurate") — all matching lines
+// are collected and joined with '\n'.
+final _reArSummary = RegExp(
+    r'^((?:All tracks accurately ripped'
+    r'|No tracks could be verified as accurate'
+    r'|Some tracks could not be verified as accurate'
+    r'|\d+\s+track\(s\)\s+accurately ripped'
+    r'|\d+\s+track\(s\)\s+could not be verified as accurate).*)',
+    caseSensitive: false);
 final _reIntegrityHash =
     RegExp(r'==== Log checksum\s+([0-9A-Fa-f]+)', caseSensitive: false);
+
+// EAC 0.95–0.99 put per-track AccurateRip results in a footer block:
+//   Track  1  accurately ripped (confidence 2)  [1A2B3C4D]
+//   Track  2  cannot be verified as accurate  [5E6F7A8B]
+final _reFooterArVerified = RegExp(
+    r'^Track\s+(\d+)\s+accurately ripped\s*'
+    r'\(confidence\s+(\d+)\)\s+\[([0-9A-Fa-f]+)\]',
+    caseSensitive: false);
+final _reFooterArCannot = RegExp(
+    r'^Track\s+(\d+)\s+cannot be verified as accurate\s+\[([0-9A-Fa-f]+)\]',
+    caseSensitive: false);
+
+/// Per-track AccurateRip result parsed from an EAC 0.95–0.99 footer block.
+class _FooterArResult {
+  final AccurateRipStatus status;
+  final int? confidence;
+  final String crcV1;
+  const _FooterArResult(this.status, this.confidence, this.crcV1);
+}
 
 // ---------------------------------------------------------------------------
 // Track-section regexes
@@ -76,12 +109,13 @@ RipLog parseEac(String content) {
   String? toolVersion;
   DateTime? extractionDate;
   String? driveName;
+  String? driveAdapter;
   String? readMode;
   int? readOffset;
   bool? overread;
   String? gapHandling;
   String? mediaType;
-  String? arSummary;
+  final arSummaryLines = <String>[];
   String? integrityHash;
   final parsingErrors = <String>[];
 
@@ -93,8 +127,37 @@ RipLog parseEac(String content) {
   bool inTrackArea = false;
   bool isRangeRip = false;
 
+  // Footer AR block results (EAC 0.95–0.99 style), keyed by track number.
+  // These lines are excluded from the track sections so they cannot
+  // overwrite the last track's own AR fields.
+  final footerAr = <int, _FooterArResult>{};
+
   for (final line in lines) {
     final trimmed = line.trim();
+    final mFooterVerified = _reFooterArVerified.firstMatch(trimmed);
+    if (mFooterVerified != null) {
+      final n = int.tryParse(mFooterVerified.group(1)!);
+      if (n != null) {
+        footerAr[n] = _FooterArResult(
+          AccurateRipStatus.verified,
+          int.tryParse(mFooterVerified.group(2)!),
+          mFooterVerified.group(3)!.toUpperCase(),
+        );
+      }
+      continue;
+    }
+    final mFooterCannot = _reFooterArCannot.firstMatch(trimmed);
+    if (mFooterCannot != null) {
+      final n = int.tryParse(mFooterCannot.group(1)!);
+      if (n != null) {
+        footerAr[n] = _FooterArResult(
+          AccurateRipStatus.mismatch,
+          null,
+          mFooterCannot.group(2)!.toUpperCase(),
+        );
+      }
+      continue;
+    }
     if (_reTrackHeader.hasMatch(trimmed)) {
       inTrackArea = true;
       if (currentTrack != null) trackSections.add(currentTrack);
@@ -132,7 +195,18 @@ RipLog parseEac(String content) {
     if (driveName == null) {
       final m = _reDrive.firstMatch(trimmed);
       if (m != null) {
-        driveName = m.group(1)?.trim();
+        // EAC appends adapter/ID text to the drive line, e.g.
+        // "ASUS BW-16D1HT   Adapter: 1   ID: 0" — split it off so the
+        // name holds only the model and the adapter text goes to
+        // DriveInfo.adapter.
+        final raw = m.group(1)!.trim();
+        final adapterStart = raw.indexOf(_reDriveAdapter);
+        if (adapterStart > 0) {
+          driveName = raw.substring(0, adapterStart).trim();
+          driveAdapter = raw.substring(adapterStart).trim();
+        } else {
+          driveName = raw;
+        }
         continue;
       }
     }
@@ -172,12 +246,10 @@ RipLog parseEac(String content) {
       }
     }
     // Footer fields can also appear in the "header" area (after all tracks)
-    if (arSummary == null) {
-      final m = _reArSummary.firstMatch(trimmed);
-      if (m != null) {
-        arSummary = m.group(1)?.trim();
-        continue;
-      }
+    final mArSummary = _reArSummary.firstMatch(trimmed);
+    if (mArSummary != null) {
+      arSummaryLines.add(mArSummary.group(1)!.trim());
+      continue;
     }
     if (integrityHash == null) {
       final m = _reIntegrityHash.firstMatch(trimmed);
@@ -189,10 +261,13 @@ RipLog parseEac(String content) {
   }
 
   // ---- Parse tracks ----
+  // TOC data is merged by track number. A range rip's single synthetic
+  // track spans the whole disc, so per-track TOC rows do not apply.
+  final toc = isRangeRip ? const <int, TocEntry>{} : parseTocTable(lines);
   final tracks = <RipLogTrack>[];
   for (final section in trackSections) {
-    final track =
-        _parseTrackSection(section, parsingErrors, isRange: isRangeRip);
+    final track = _parseTrackSection(section, parsingErrors,
+        isRange: isRangeRip, footerAr: footerAr, toc: toc);
     if (track != null) tracks.add(track);
   }
 
@@ -202,19 +277,19 @@ RipLog parseEac(String content) {
   if (trackSections.isNotEmpty) {
     for (final line in trackSections.last) {
       final trimmed = line.trim();
-      if (arSummary == null) {
-        final m = _reArSummary.firstMatch(trimmed);
-        if (m != null) arSummary = m.group(1)?.trim();
-      }
+      final m = _reArSummary.firstMatch(trimmed);
+      if (m != null) arSummaryLines.add(m.group(1)!.trim());
       if (integrityHash == null) {
-        final m = _reIntegrityHash.firstMatch(trimmed);
-        if (m != null) integrityHash = m.group(1)?.trim();
+        final mHash = _reIntegrityHash.firstMatch(trimmed);
+        if (mHash != null) integrityHash = mHash.group(1)?.trim();
       }
     }
   }
+  final arSummary = arSummaryLines.isEmpty ? null : arSummaryLines.join('\n');
 
   final drive = driveName != null
-      ? DriveInfo(name: driveName, readOffset: readOffset)
+      ? DriveInfo(
+          name: driveName, readOffset: readOffset, adapter: driveAdapter)
       : null;
 
   // Test-and-copy is derived: true if any track reported a test CRC,
@@ -247,7 +322,9 @@ RipLog parseEac(String content) {
 // ---------------------------------------------------------------------------
 
 RipLogTrack? _parseTrackSection(List<String> lines, List<String> parsingErrors,
-    {bool isRange = false}) {
+    {bool isRange = false,
+    Map<int, _FooterArResult> footerAr = const {},
+    Map<int, TocEntry> toc = const {}}) {
   int? trackNumber = isRange ? 1 : null;
   String? filename;
   double? peakLevel;
@@ -398,6 +475,17 @@ RipLogTrack? _parseTrackSection(List<String> lines, List<String> parsingErrors,
     return null;
   }
 
+  // Apply a footer-block AR result (EAC 0.95–0.99 style) when the track's
+  // own section carried no inline AR line.
+  final footerResult = footerAr[trackNumber];
+  if (footerResult != null && arStatus == AccurateRipStatus.notChecked) {
+    arStatus = footerResult.status;
+    arConfidence = footerResult.confidence;
+    arCrcV1 = footerResult.crcV1;
+  }
+
+  final tocEntry = toc[trackNumber];
+
   return RipLogTrack(
     trackNumber: trackNumber,
     filename: filename,
@@ -421,6 +509,9 @@ RipLogTrack? _parseTrackSection(List<String> lines, List<String> parsingErrors,
       inconsistentErrorSectors: inconsistentErrorSectors,
     ),
     logFormat: RipLogFormat.eac,
+    startSector: tocEntry?.startSector,
+    lengthSectors: tocEntry?.lengthSectors,
+    durationSeconds: tocEntry?.durationSeconds,
   );
 }
 
@@ -453,14 +544,24 @@ final _monthNames = <String, int>{
   'dezembro': 12,
 };
 
+final _reTimeOfDay = RegExp(r',\s*(\d{1,2}):(\d{2})\s*$');
+
 DateTime? _parseEacDate(String? raw) {
   if (raw == null) return null;
-  // e.g. "15. March 2026"
+  // e.g. "15. March 2026" or "15. March 2026, 20:32"
+  var hour = 0;
+  var minute = 0;
+  final mTime = _reTimeOfDay.firstMatch(raw);
+  if (mTime != null) {
+    hour = int.parse(mTime.group(1)!);
+    minute = int.parse(mTime.group(2)!);
+    raw = raw.substring(0, mTime.start);
+  }
   final parts = raw.split(RegExp(r'[\s.]+'));
   if (parts.length < 3) return null;
   final day = int.tryParse(parts[0]);
   final month = _monthNames[parts[1].toLowerCase()];
   final year = int.tryParse(parts[2]);
   if (day == null || month == null || year == null) return null;
-  return DateTime(year, month, day);
+  return DateTime(year, month, day, hour, minute);
 }

@@ -3,8 +3,9 @@
   "toolVersion": "V1.6",
   "extractionDate": "2026-01-05T00:00:00.000",
   "drive": {
-    "name": "ASUS BW-16D1HT   Adapter: 1   ID: 0",
-    "readOffset": 6
+    "name": "ASUS BW-16D1HT",
+    "readOffset": 6,
+    "adapter": "Adapter: 1   ID: 0"
   },
   "readMode": "Secure",
   "readOffset": 6,
