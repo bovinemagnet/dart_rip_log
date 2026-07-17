@@ -41,7 +41,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  dart_rip_log: ^0.1.1
+  dart_rip_log: ^0.2.0
 ```
 
 Then:

@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0 (unreleased)
+## 0.2.0
 
 - **Encoding detection** (#29): `parseRipLogFile` and the CLI now sniff
   the byte-order mark before decoding — UTF-16LE (the default encoding
@@ -48,6 +48,8 @@
   instead of 0, so a corrupt or non-log file can no longer produce a
   green build. `--fail-on mismatch`, `errors`, and `never` are
   unchanged.
+- JSON-shape changes are limited to `drive{}` (#31) and the per-track
+  TOC fields (#34). Total suite: 243 tests.
 
 ## 0.1.1
 
