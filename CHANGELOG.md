@@ -1,5 +1,46 @@
 # Changelog
 
+## Unreleased
+
+- **Full parsers for whipper, CUERipper and dBpoweramp** (#2, #3, #4).
+  Behaviour change: logs from these tools previously parsed to zero
+  tracks; they now return tracks, a `quality` value and therefore
+  different CLI exit codes.
+  - **whipper**: YAML-style logs of whipper 0.8+ and the plain-text 0.7
+    layout — header, TOC sectors, per-track test/copy CRCs,
+    AccurateRip v1/v2 results and the SHA-256 log hash.
+  - **CUERipper**: both layouts. The default EAC-style log is parsed by
+    the EAC parser and tagged `cueRipper`; the native layout yields
+    the TOC, destination files, the zero-offset `AccurateRip summary`
+    rows and the peak/CRC32 table. Confidence is the v1 plus v2 match
+    count from `(c1+c2/total)`.
+  - **dBpoweramp**: drive and offset settings, per-track LBA ranges,
+    CRC32 and AccurateRip CRCs (a CRC without a `(CRCvN)` suffix is
+    treated as v1), and the Accurate / Inaccurate / Secure / Insecure /
+    Aborted status shapes. Insecure and aborted tracks report their
+    re-rip frame count as `inconsistentErrorSectors` (minimum 1) and
+    unrecoverable frames as `damagedSectors`. An appended second log in
+    the same file is not merged, and a warning is recorded.
+- **EAC AccurateRip v2 CRC** (#39): EAC tracks no longer report an
+  `accurateRipCrcV2`, since no EAC version writes one. The EAC mismatch
+  pattern also accepts the genuine `Cannot be verified as accurate
+  (confidence N) [X], AccurateRip returned [Y]` shape.
+- **Format detection** (#38): tool signatures are matched only at the
+  start of the first few lines, so a rival tool's name in a track title
+  or file path can no longer misroute detection.
+- **CLI multi-file runs** (#40): an unreadable file is reported to
+  stderr and skipped; the remaining files are still processed, and the
+  run exits 2 at the end.
+- **Robustness**: a native CUERipper TOC row numbered 0 no longer throws
+  (#62), and a garbled dBpoweramp track header no longer lets the next
+  track's data overwrite the previous one (#63).
+- **Documentation** (#66): `--help` and the README now state that the
+  default `--fail-on any` policy also exits 1 when any track is not
+  AccurateRip-verified, including tracks not in the AccurateRip
+  database. This was already the behaviour.
+- Fuzz tests (#21) mutate every `test/fixtures/*.log` file with random
+  slices, line deletions and bit flips.
+
 ## 0.2.0
 
 - **Encoding detection** (#29): `parseRipLogFile` and the CLI now sniff
@@ -85,6 +126,9 @@
   golden tests. Total suite: 205 tests.
 
 ### Deferred to `0.1.x parsers` milestone
+
+Superseded: these parsers have since been implemented (see
+Unreleased).
 
 Full parsers for whipper (#2), CUERipper (#3), and dBpoweramp (#4)
 still require real-world sample logs. Detection and stubs remain in
