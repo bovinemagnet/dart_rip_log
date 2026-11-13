@@ -65,7 +65,9 @@ void _printUsage(IOSink sink) {
   sink.writeln('Exit codes:');
   sink.writeln('  0  --fail-on policy not triggered');
   sink.writeln('  1  --fail-on policy triggered (default: any AR mismatch,');
-  sink.writeln('     track with error counts > 0, or unparseable input —');
+  sink.writeln('     track with error counts > 0, any track not');
+  sink.writeln('     AccurateRip-verified — including tracks not in the');
+  sink.writeln('     AccurateRip database — or unparseable input:');
   sink.writeln('     unknown format / zero tracks)');
   sink.writeln('  2  bad arguments or file I/O error (unreadable files');
   sink.writeln('     are reported to stderr and skipped; remaining files');

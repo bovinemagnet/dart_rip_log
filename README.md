@@ -131,12 +131,19 @@ riplog --help                            # full usage
 
 Exit-code policy is controlled by `--fail-on`:
 
-| Policy      | Exits 1 when…                                   |
-| ----------- | ----------------------------------------------- |
-| `any`       | default — any AR mismatch or track error counts |
-| `mismatch`  | any AR mismatch                                 |
-| `errors`    | any track error counts                          |
-| `never`     | never (always exits 0 on successful parse)      |
+| Policy      | Exits 1 when…                                                            |
+| ----------- | ------------------------------------------------------------------------ |
+| `any`       | default — any AR mismatch, track error counts, any track not AccurateRip-verified, or unparseable input |
+| `mismatch`  | any AR mismatch                                                          |
+| `errors`    | any track error counts                                                   |
+| `never`     | never (always exits 0 on successful parse)                               |
+
+Under `any`, a track counts as not verified unless its AccurateRip status
+is `verified`, so a clean rip of a disc that is not in the AccurateRip
+database (`notInDatabase`) or was never checked (`notChecked`) still exits
+1. Unparseable input means an unknown log format or a log with zero
+tracks. Use `--fail-on errors` or `--fail-on mismatch` to accept
+unverified-but-clean rips.
 
 `2` is always returned for bad arguments or I/O errors. An unreadable file
 in a multi-file run is reported to stderr and skipped — remaining files are
@@ -201,11 +208,18 @@ lengthSectors, durationSeconds`. Numeric peak/quality values are fractions in
 null — so `quality`, `logFormat`, `tracks`, and `errors` are always present,
 while the rest appear only when the log supplied them.
 
-`copyOk` is format-specific: for EAC it reflects the per-track `Copy OK`
-line; XLD has no equivalent concept, so for XLD tracks it is derived —
-`true` when the track's `Statistics` block reports zero errors,
-independent of AccurateRip status (a clean rip of a disc that is not in
-the AccurateRip database is still a good copy).
+`copyOk` is format-specific, and in every format it is independent of
+AccurateRip status (a clean rip of a disc that is not in the AccurateRip
+database is still a good copy):
+
+| Format             | `copyOk` is `true` when…                                         |
+| ------------------ | ---------------------------------------------------------------- |
+| EAC                | the track has a `Copy OK` line                                   |
+| XLD                | the track's `Statistics` block reports zero errors (XLD has no `Copy OK` line) |
+| whipper            | the track's status is `Copy OK`, or the status line is missing   |
+| CUERipper (EAC-style) | as for EAC                                                    |
+| CUERipper (native) | always — the native log lists only extracted tracks and has no per-track status |
+| dBpoweramp         | the track is neither `Insecure` nor `** Aborted`                 |
 
 `source` (byte size, line count, parser name, parse timestamp) is populated
 only by `parseRipLogFile`, not by `parseRipLog`.
@@ -238,9 +252,10 @@ a parser change.
 ## Contributing
 
 Issues and pull requests welcome on
-[GitHub](https://github.com/bovinemagnet/dart_rip_log). Additional
-real-world log samples from CUERipper, whipper, and dBpoweramp would be
-especially valuable for finishing those parsers.
+[GitHub](https://github.com/bovinemagnet/dart_rip_log). Real-world log
+samples from any supported ripper are welcome, especially from
+CUERipper, whipper, and dBpoweramp releases or locales the test fixtures
+do not yet cover.
 
 ## Licence
 
