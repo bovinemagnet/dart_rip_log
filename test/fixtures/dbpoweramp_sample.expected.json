@@ -255,9 +255,9 @@
         "driftErrors": 0,
         "droppedBytes": 0,
         "duplicatedBytes": 0,
-        "inconsistentErrorSectors": 0,
+        "inconsistentErrorSectors": 208,
         "damagedSectors": 0,
-        "hasErrors": false
+        "hasErrors": true
       },
       "logFormat": "dbPoweramp",
       "startSector": 158220,
@@ -267,6 +267,6 @@
   ],
   "accurateRipSummary": "10 Tracks Ripped: 8 Accurate, 1 Secure, 1 Inaccurate",
   "testAndCopy": false,
-  "quality": "mismatches",
+  "quality": "errors",
   "errors": []
 }
