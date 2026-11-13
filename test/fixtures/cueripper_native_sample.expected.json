@@ -17,7 +17,7 @@
       "accurateRipStatus": "verified",
       "accurateRipCrcV1": "1C4D0BD3",
       "accurateRipCrcV2": "46837CE2",
-      "accurateRipConfidence": 6,
+      "accurateRipConfidence": 9,
       "copyOk": true,
       "errors": {
         "readErrors": 0,
@@ -45,7 +45,7 @@
       "accurateRipStatus": "verified",
       "accurateRipCrcV1": "77C24650",
       "accurateRipCrcV2": "437F3EDA",
-      "accurateRipConfidence": 6,
+      "accurateRipConfidence": 9,
       "copyOk": true,
       "errors": {
         "readErrors": 0,
@@ -73,7 +73,7 @@
       "accurateRipStatus": "verified",
       "accurateRipCrcV1": "02386509",
       "accurateRipCrcV2": "CF823924",
-      "accurateRipConfidence": 6,
+      "accurateRipConfidence": 9,
       "copyOk": true,
       "errors": {
         "readErrors": 0,

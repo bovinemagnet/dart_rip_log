@@ -169,7 +169,8 @@ RipLog _parseNative(List<String> lines, String? toolVersion) {
               : status.startsWith('No match')
                   ? AccurateRipStatus.mismatch
                   : AccurateRipStatus.notChecked,
-          int.tryParse(m.group(4)!),
+          // `(c1+c2/total)`: confidence is the v1 plus v2 match count.
+          (int.tryParse(m.group(4)!) ?? 0) + (int.tryParse(m.group(5)!) ?? 0),
           m.group(2)!.toUpperCase(),
           m.group(3)!.toUpperCase(),
         );
@@ -200,7 +201,7 @@ RipLog _parseNative(List<String> lines, String? toolVersion) {
     final ar = arResults[n];
     tracks.add(RipLogTrack(
       trackNumber: n,
-      filename: n - 1 < filenames.length ? filenames[n - 1] : null,
+      filename: n >= 1 && n <= filenames.length ? filenames[n - 1] : null,
       peakLevel: peaks[n],
       copyCrc: crcs[n],
       accurateRipStatus: ar?.status ??

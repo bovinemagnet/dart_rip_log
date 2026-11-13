@@ -98,7 +98,8 @@ void main() {
       expect(t.peakLevel, closeTo(0.973, 1e-9));
       expect(t.copyCrc, 'F57D3663');
       expect(t.accurateRipStatus, AccurateRipStatus.verified);
-      expect(t.accurateRipConfidence, 6);
+      // `(06+03/15)`: confidence is the v1 + v2 match count (#67).
+      expect(t.accurateRipConfidence, 9);
       expect(t.accurateRipCrcV1, '1C4D0BD3');
       expect(t.accurateRipCrcV2, '46837CE2');
       expect(t.logFormat, RipLogFormat.cueRipper);
@@ -142,6 +143,42 @@ End of status report
       expect(log.logFormat, RipLogFormat.cueRipper);
       expect(log.tracks, hasLength(1));
       expect(log.tracks[0].accurateRipStatus, AccurateRipStatus.notInDatabase);
+    });
+
+    test('v2-only AccurateRip match has non-zero confidence (#67)', () {
+      const content = '''
+CUERipper v2.1.4 Copyright (C) 2008-12 Grigory Chudov
+Extraction logfile from : 01/01/2020 10:00:00
+
+TOC of the extracted CD
+
+     Track |   Start  |  Length  | Start sector | End sector
+    ---------------------------------------------------------
+        1  |  0:00.00 |  1:00.00 |         0    |     4499
+
+AccurateRip summary
+
+Track   [ CRC    |   V2   ] Status
+ 01     [1c4d0bd3|46837ce2] (00+03/15) Accurately ripped
+''';
+      final t = parseRipLog(content).tracks.single;
+      expect(t.accurateRipStatus, AccurateRipStatus.verified);
+      expect(t.accurateRipConfidence, 3);
+    });
+
+    test('TOC row numbered 0 does not throw (#62)', () {
+      final content = File('test/fixtures/cueripper_native_sample.log')
+          .readAsStringSync()
+          .replaceFirstMapped(
+              RegExp(r'^(\s*)1(\s+\|\s+0:00\.00)', multiLine: true),
+              (m) => '${m[1]}0${m[2]}');
+      expect(
+          content,
+          isNot(File('test/fixtures/cueripper_native_sample.log')
+              .readAsStringSync()));
+      final log = parseRipLog(content);
+      final t0 = log.tracks.firstWhere((t) => t.trackNumber == 0);
+      expect(t0.filename, isNull);
     });
 
     test('burst mode (Secure mode : 0) maps to Burst read mode', () {

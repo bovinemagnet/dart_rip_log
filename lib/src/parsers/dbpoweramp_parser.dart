@@ -26,6 +26,8 @@ final _rePass1 = RegExp(r'^Pass 1 Drive Speed:');
 final _reTrack =
     RegExp(r'^Track\s+(\d+):\s+Ripped LBA\s+(\d+)\s+to\s+(\d+)\s+\([\d:]+\)\s+'
         r'in\s+[\d:]+\.\s+Filename:\s*(.+)$');
+// Any track header, including one too garbled for [_reTrack] to parse.
+final _reTrackBoundary = RegExp(r'^Track\s+\d+:');
 // Status line, e.g. `AccurateRip: Accurate (confidence 42)     [Pass 1]`,
 // `Secure  [Pass 1 & 2, Ultra 1 to 3]`, `Insecure  [...]`, or the combined
 // `AccurateRip: Inaccurate (confidence 200) Secure (Warning) [...]`.
@@ -34,9 +36,12 @@ final _reArAccurate =
 final _reArInaccurate = RegExp(r'^AccurateRip:\s+Inaccurate\b');
 final _reSecure = RegExp(r'^Secure\b');
 final _reInsecure = RegExp(r'^Insecure\b');
+// Older releases omit the `(CRCvN)` suffix; their AccurateRip CRC is v1.
 final _reCrc = RegExp(r'^CRC32:\s*([0-9A-Fa-f]{8})'
-    r'(?:\s+AccurateRip CRC:\s*([0-9A-Fa-f]{8})\s*\(CRCv([12])\))?');
+    r'(?:\s+AccurateRip CRC:\s*([0-9A-Fa-f]{8})(?:\s*\(CRCv([12])\))?)?');
 final _reAborted = RegExp(r'^\*\*\s*Aborted');
+// `Re-Rip 208 Frames` on a status line, `ReRip 208 Frames` on an abort line.
+final _reReRipFrames = RegExp(r'Re-?Rip\s+(\d+)\s+Frames');
 final _reUnrecoverable =
     RegExp(r'^\*\*\s*Reached Maximum\s+(\d+)\s+Unrecoverable Frames');
 final _reSummary = RegExp(r'^\d+\s+Tracks Ripped\b.*');
@@ -54,9 +59,16 @@ class _TrackBlock {
   bool secure = false;
   bool insecure = false;
   bool aborted = false;
+  int reRipFrames = 0;
   int unrecoverableFrames = 0;
 
   _TrackBlock(this.number, this.startLba, this.endLba, this.filename);
+
+  void recordReRipFrames(String line) {
+    final m = _reReRipFrames.firstMatch(line);
+    final frames = m == null ? 0 : int.tryParse(m.group(1)!) ?? 0;
+    if (frames > reRipFrames) reRipFrames = frames;
+  }
 }
 
 /// Parse a dBpoweramp log from its string [content].
@@ -118,6 +130,13 @@ RipLog parseDbPoweramp(String content) {
       blocks.add(current);
       continue;
     }
+    if (_reTrackBoundary.hasMatch(line)) {
+      // A garbled header still ends the previous track, so the lines that
+      // follow are not applied to it.
+      current = null;
+      parsingErrors.add('Could not parse dBpoweramp track header: $line');
+      continue;
+    }
 
     if (current != null) {
       final mAccurate = _reArAccurate.firstMatch(line);
@@ -138,6 +157,7 @@ RipLog parseDbPoweramp(String content) {
       }
       if (_reInsecure.hasMatch(line)) {
         current.insecure = true;
+        current.recordReRipFrames(line);
         continue;
       }
       final mCrc = _reCrc.firstMatch(line);
@@ -155,6 +175,7 @@ RipLog parseDbPoweramp(String content) {
       }
       if (_reAborted.hasMatch(line)) {
         current.aborted = true;
+        current.recordReRipFrames(line);
         continue;
       }
       final mUnrecoverable = _reUnrecoverable.firstMatch(line);
@@ -205,6 +226,13 @@ RipLogTrack _toTrack(_TrackBlock block) {
 
   final lengthSectors = block.endLba - block.startLba;
 
+  // Frames still needing a re-rip on an insecure or aborted track were never
+  // read consistently. A failed track with no frame count still counts as
+  // one so it registers as an error.
+  final failed = block.insecure || block.aborted;
+  final inconsistentFrames =
+      failed ? (block.reRipFrames > 0 ? block.reRipFrames : 1) : 0;
+
   return RipLogTrack(
     trackNumber: block.number,
     filename: block.filename,
@@ -213,8 +241,11 @@ RipLogTrack _toTrack(_TrackBlock block) {
     accurateRipCrcV1: block.arCrcV1,
     accurateRipCrcV2: block.arCrcV2,
     accurateRipConfidence: block.arConfidence,
-    copyOk: !block.insecure && !block.aborted,
-    errors: TrackErrors(damagedSectors: block.unrecoverableFrames),
+    copyOk: !failed,
+    errors: TrackErrors(
+      inconsistentErrorSectors: inconsistentFrames,
+      damagedSectors: block.unrecoverableFrames,
+    ),
     logFormat: RipLogFormat.dbPoweramp,
     startSector: block.startLba,
     lengthSectors: lengthSectors > 0 ? lengthSectors : null,

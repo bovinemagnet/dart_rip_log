@@ -67,6 +67,17 @@ void main() {
       expect(t.copyOk, false);
       expect(t.accurateRipStatus, AccurateRipStatus.notChecked);
     });
+
+    test('track 10: re-rip frames count as errors (#64)', () {
+      final t = log.tracks[9];
+      expect(t.errors.inconsistentErrorSectors, 208);
+      expect(t.errors.hasErrors, isTrue);
+      expect(log.quality, RipLogQuality.errors);
+    });
+
+    test('track 9: Secure (Warning) re-rip recovered, so no errors', () {
+      expect(log.tracks[8].errors.hasErrors, isFalse);
+    });
   });
 
   group('dBpoweramp parser (variants)', () {
@@ -109,6 +120,57 @@ Track 1:  Ripped LBA 0 to 4500 (1:00) in 3:05. Filename: C:\\x\\01 - One.flac
       final log = parseRipLog(content);
       expect(log.tracks[0].copyOk, false);
       expect(log.tracks[0].errors.damagedSectors, 3);
+    });
+
+    test('insecure track with no frame count still has errors (#64)', () {
+      const content = '''
+dBpoweramp Release 15 Digital Audio Extraction Log from 21 September 2010 10:45 PM
+
+Track 1:  Ripped LBA 0 to 4500 (1:00) in 3:05. Filename: C:\\x\\01 - One.flac
+  Insecure  [Pass 1 & 2]
+''';
+      final t = parseRipLog(content).tracks.single;
+      expect(t.errors.inconsistentErrorSectors, 1);
+      expect(t.errors.hasErrors, isTrue);
+    });
+
+    test('aborted-only track takes the frame count from the abort line', () {
+      const content = '''
+dBpoweramp Release 15 Digital Audio Extraction Log from 21 September 2010 10:45 PM
+
+Track 1:  Ripped LBA 0 to 4500 (1:00) in 3:05. Filename: C:\\x\\01 - One.flac
+  ** Aborted: Have to ReRip 55 Frames, Re-Rip Limit Set to 50 Frames
+''';
+      final t = parseRipLog(content).tracks.single;
+      expect(t.copyOk, false);
+      expect(t.errors.inconsistentErrorSectors, 55);
+    });
+
+    test('AccurateRip CRC without a (CRCvN) suffix defaults to v1 (#68)', () {
+      const content = '''
+dBpoweramp Release 13 Digital Audio Extraction Log from 05 December 2009 08:23 PM
+
+Track 1:  Ripped LBA 0 to 4500 (1:00) in 0:05. Filename: C:\\x\\01 - One.flac
+  AccurateRip: Accurate (confidence 5)     [Pass 1]
+  CRC32: 6E39CDD0     AccurateRip CRC: 2B01FA55     [DiscID: 010-0019d2f4-00a3c81b-7d0a920a-1]
+''';
+      final t = parseRipLog(content).tracks.single;
+      expect(t.copyCrc, '6E39CDD0');
+      expect(t.accurateRipCrcV1, '2B01FA55');
+      expect(t.accurateRipCrcV2, isNull);
+    });
+
+    test('garbled track header does not leak into the previous track (#63)',
+        () {
+      final content = File('test/fixtures/dbpoweramp_sample.log')
+          .readAsStringSync()
+          .replaceFirst('Track 9:  Ripped LBA', 'Track 9:  Rippd LBA');
+      final log = parseRipLog(content);
+      final track8 = log.tracks.firstWhere((t) => t.trackNumber == 8);
+      expect(track8.accurateRipStatus, AccurateRipStatus.notInDatabase);
+      expect(track8.copyCrc, '9283B65C');
+      expect(log.tracks.map((t) => t.trackNumber), isNot(contains(9)));
+      expect(log.errors.any((e) => e.contains('Track 9')), isTrue);
     });
 
     test('appended second log in the same file is not merged', () {
