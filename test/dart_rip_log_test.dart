@@ -569,11 +569,11 @@ Statistics
       expect(isFullyVerified(parseRipLog(_xldMinimal)), isFalse);
     });
 
-    test('isFullyVerified: empty tracks → true', () {
+    test('isFullyVerified: empty tracks → false (#57)', () {
       const unknown =
           'X Lossless Decoder version 1.0\n\nXLD extraction logfile from 2026-01-01\n\nUsed drive : Drive A\n';
       final log = parseRipLog(unknown);
-      expect(isFullyVerified(log), isTrue);
+      expect(isFullyVerified(log), isFalse);
     });
 
     test('tracksWithErrors: returns tracks with errors', () {

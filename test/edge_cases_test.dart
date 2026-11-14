@@ -430,10 +430,60 @@ Statistics
   // -------------------------------------------------------------------------
   // Convenience edge cases
   // -------------------------------------------------------------------------
+  group('Oversized integers do not throw (#52)', () {
+    const huge = '99999999999999999999999';
+
+    void expectWarns(String content) {
+      late RipLog log;
+      expect(() => log = parseRipLog(content), returnsNormally);
+      expect(log.errors.any((e) => e.contains(huge)), isTrue,
+          reason: 'warnings: ${log.errors}');
+    }
+
+    test('whipper track block number', () {
+      expectWarns('Log created by: whipper 0.10.0 (internal logger)\n'
+          '\n'
+          'Tracks:\n'
+          '  $huge:\n'
+          '    Filename: ./x.flac\n');
+    });
+
+    test('whipper TOC start and end sectors', () {
+      final log = File('test/fixtures/whipper_sample.log')
+          .readAsStringSync()
+          .replaceFirst(RegExp(r'Start sector: \d+'), 'Start sector: $huge')
+          .replaceFirst(RegExp(r'End sector: \d+'), 'End sector: $huge');
+      expectWarns(log);
+    });
+
+    test('dBpoweramp track number and LBAs', () {
+      for (final header in [
+        'Track $huge:  Ripped LBA 0 to 4500 (1:00) in 0:05. Filename: x.flac',
+        'Track 1:  Ripped LBA $huge to 4500 (1:00) in 0:05. Filename: x.flac',
+        'Track 1:  Ripped LBA 0 to $huge (1:00) in 0:05. Filename: x.flac',
+      ]) {
+        expectWarns('dBpoweramp Release 17.2 Digital Audio Extraction Log '
+            'from Wednesday, July 21, 2021 22:44\n\n$header\n'
+            '  Secure  [Pass 1]\n');
+      }
+    });
+
+    test('CUERipper native AccurateRip and CRC table rows', () {
+      final log = File('test/fixtures/cueripper_native_sample.log')
+          .readAsStringSync()
+          .replaceFirstMapped(
+              RegExp(r'^ 01(\s+\[)', multiLine: true), (m) => ' $huge${m[1]}')
+          .replaceFirstMapped(RegExp(r'^ 01(\s+[\d.]+\s+\[)', multiLine: true),
+              (m) => ' $huge${m[1]}');
+      expect(log.split(huge), hasLength(3), reason: 'both rows inflated');
+      expectWarns(log);
+    });
+  });
+
   group('Convenience edge cases', () {
-    test('isFullyVerified on empty RipLog → true', () {
+    test('isFullyVerified on empty RipLog → false (#57)', () {
       const log = RipLog(logFormat: RipLogFormat.unknown);
-      expect(isFullyVerified(log), isTrue);
+      expect(isFullyVerified(log), isFalse);
     });
 
     test('isFullyVerified on notChecked-only track → false', () {

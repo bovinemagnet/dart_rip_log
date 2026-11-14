@@ -161,7 +161,12 @@ RipLog _parseNative(List<String> lines, String? toolVersion) {
     if (!inOffsetted) {
       final m = _reArRow.firstMatch(line);
       if (m != null) {
-        final track = int.parse(m.group(1)!);
+        final track = int.tryParse(m.group(1)!);
+        if (track == null) {
+          parsingErrors.add('Ignored CUERipper AccurateRip row with '
+              'out-of-range track number: $line');
+          continue;
+        }
         final status = m.group(6)!.trim();
         arResults[track] = _NativeArResult(
           status.startsWith('Accurately ripped')
@@ -180,7 +185,12 @@ RipLog _parseNative(List<String> lines, String? toolVersion) {
 
     final mCrc = _reCrcRow.firstMatch(line);
     if (mCrc != null) {
-      final track = int.parse(mCrc.group(1)!);
+      final track = int.tryParse(mCrc.group(1)!);
+      if (track == null) {
+        parsingErrors.add('Ignored CUERipper CRC row with out-of-range '
+            'track number: $line');
+        continue;
+      }
       peaks[track] = percentToFraction(mCrc.group(2)) ?? 0;
       crcs[track] = mCrc.group(3)!.toUpperCase();
       continue;

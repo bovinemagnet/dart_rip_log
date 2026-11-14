@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'encoding.dart';
 import 'models.dart';
@@ -20,7 +21,7 @@ Future<RipLog> parseRipLogFile(String filePath) async {
   final log = parseRipLog(content);
   final source = LogSource(
     byteSize: bytes.length,
-    lineCount: '\n'.allMatches(content).length + 1,
+    lineCount: LineSplitter.split(content).length,
     parserName: log.logFormat.name,
     parsedAt: DateTime.now().toUtc(),
   );

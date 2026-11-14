@@ -17,6 +17,35 @@ void main() {
       expect(log.source!.parsedAt.isUtc, isTrue);
     });
 
+    group('lineCount (#54)', () {
+      late Directory tempDir;
+      setUp(() =>
+          tempDir = Directory.systemTemp.createTempSync('riplog_linecount'));
+      tearDown(() => tempDir.deleteSync(recursive: true));
+
+      Future<int> countLines(String content) async {
+        final path = '${tempDir.path}/x.log';
+        File(path).writeAsStringSync(content);
+        return (await parseRipLogFile(path)).source!.lineCount;
+      }
+
+      test('trailing newline is not an extra line', () async {
+        expect(await countLines('a\nb\n'), 2);
+      });
+
+      test('no trailing newline', () async {
+        expect(await countLines('a\nb'), 2);
+      });
+
+      test('CRLF line endings', () async {
+        expect(await countLines('a\r\nb\r\n'), 2);
+      });
+
+      test('empty content has zero lines', () async {
+        expect(await countLines(''), 0);
+      });
+    });
+
     test('parseRipLog (string) does not attach a source', () {
       final log =
           parseRipLog(File('test/fixtures/eac_sample.log').readAsStringSync());

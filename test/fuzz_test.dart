@@ -1,6 +1,7 @@
 /// Property/fuzz tests for parser robustness (#21).
 ///
-/// Feeds random slices, line deletions, and bit-flips of the real fixtures
+/// Feeds random slices, line deletions, bit-flips, and digit inflation of
+/// the real fixtures
 /// to [parseRipLog] and asserts the "never throw on malformed content"
 /// invariant: every mutation must yield a [RipLog] whose `toJson()` output
 /// is JSON-encodable, without throwing.
@@ -58,6 +59,23 @@ String _deleteLines(String content, Random rng) {
   return lines.join('\n');
 }
 
+/// Lengthen up to 3 random digit runs in [content] past the 64-bit int
+/// range, so a bare `int.parse` on a `(\d+)` capture throws (#52).
+String _inflateDigits(String content, Random rng) {
+  final digits = RegExp(r'\d').allMatches(content).toList();
+  if (digits.isEmpty) return content;
+  final positions = {
+    for (var i = 0; i < 1 + rng.nextInt(3); i++)
+      digits[rng.nextInt(digits.length)].start,
+  }.toList()
+    ..sort((a, b) => b.compareTo(a));
+  var out = content;
+  for (final pos in positions) {
+    out = out.replaceRange(pos, pos, '9' * 25);
+  }
+  return out;
+}
+
 /// Flip a random bit in up to 10 random code units of [content].
 String _bitFlip(String content, Random rng) {
   final units = content.codeUnits.toList();
@@ -76,6 +94,7 @@ void main() {
       'random slices': _slice,
       'random line deletions': _deleteLines,
       'random bit flips': _bitFlip,
+      'random digit inflation': _inflateDigits,
     };
 
     test('fixture discovery finds every format', () {

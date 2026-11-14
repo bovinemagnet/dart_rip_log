@@ -120,19 +120,20 @@ RipLog parseDbPoweramp(String content) {
     }
 
     final mTrack = _reTrack.firstMatch(line);
-    if (mTrack != null) {
-      current = _TrackBlock(
-        int.parse(mTrack.group(1)!),
-        int.parse(mTrack.group(2)!),
-        int.parse(mTrack.group(3)!),
-        mTrack.group(4)!.trim(),
-      );
+    final number = int.tryParse(mTrack?.group(1) ?? '');
+    final startLba = int.tryParse(mTrack?.group(2) ?? '');
+    final endLba = int.tryParse(mTrack?.group(3) ?? '');
+    if (mTrack != null &&
+        number != null &&
+        startLba != null &&
+        endLba != null) {
+      current = _TrackBlock(number, startLba, endLba, mTrack.group(4)!.trim());
       blocks.add(current);
       continue;
     }
     if (_reTrackBoundary.hasMatch(line)) {
-      // A garbled header still ends the previous track, so the lines that
-      // follow are not applied to it.
+      // A garbled header, or one with an out-of-range number, still ends
+      // the previous track, so the lines that follow are not applied to it.
       current = null;
       parsingErrors.add('Could not parse dBpoweramp track header: $line');
       continue;

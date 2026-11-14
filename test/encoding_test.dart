@@ -30,8 +30,8 @@ void main() {
     return bytes;
   }
 
-  List<int> utf16BeBytes(String s) {
-    final bytes = <int>[0xFE, 0xFF];
+  List<int> utf16BeBytes(String s, {bool bom = true}) {
+    final bytes = <int>[if (bom) 0xFE, if (bom) 0xFF];
     for (final unit in s.codeUnits) {
       bytes.add((unit >> 8) & 0xFF);
       bytes.add(unit & 0xFF);
@@ -68,6 +68,20 @@ void main() {
 
     test('UTF-16BE with BOM parses identically to UTF-8', () async {
       final path = await writeTemp('utf16be.log', utf16BeBytes(asciiContent));
+      final log = await parseRipLogFile(path);
+      expect(jsonWithoutSource(log), equals(expected));
+    });
+
+    test('UTF-16LE without BOM parses identically to UTF-8 (#53)', () async {
+      final path = await writeTemp(
+          'utf16le_nobom.log', utf16LeBytes(asciiContent, bom: false));
+      final log = await parseRipLogFile(path);
+      expect(jsonWithoutSource(log), equals(expected));
+    });
+
+    test('UTF-16BE without BOM parses identically to UTF-8 (#53)', () async {
+      final path = await writeTemp(
+          'utf16be_nobom.log', utf16BeBytes(asciiContent, bom: false));
       final log = await parseRipLogFile(path);
       expect(jsonWithoutSource(log), equals(expected));
     });
