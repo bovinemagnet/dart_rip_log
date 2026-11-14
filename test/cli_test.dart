@@ -86,6 +86,13 @@ void main() {
       expect(parts[2], '3');
     });
 
+    test('--quiet does not report an unknown log as verified (#57)', () async {
+      final r = await run(['-q', '-'], stdinText: 'not a rip log\n');
+      final parts = r.stdout.toString().trim().split('\t');
+      expect(parts[1], 'unknown');
+      expect(parts[3], 'false');
+    });
+
     test('missing file → exit 2', () async {
       final r = await run(['/tmp/definitely-does-not-exist-riplog.log']);
       expect(r.exitCode, 2);

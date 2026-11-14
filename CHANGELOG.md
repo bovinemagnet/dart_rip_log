@@ -33,13 +33,28 @@
   run exits 2 at the end.
 - **Robustness**: a native CUERipper TOC row numbered 0 no longer throws
   (#62), and a garbled dBpoweramp track header no longer lets the next
-  track's data overwrite the previous one (#63).
+  track's data overwrite the previous one (#63). A number too large for a
+  64-bit int in a whipper, CUERipper or dBpoweramp log no longer throws
+  `FormatException`; the affected block, row or line is skipped with a
+  warning in `errors` (#52).
+- **`isFullyVerified` behaviour change** (#57): a log with no tracks now
+  returns `false` instead of a vacuous `true`. The `riplog -q` verified
+  column no longer reports `true` for an unknown or empty log. Exit codes
+  are unchanged.
+- **BOM-less UTF-16** (#53): `parseRipLogFile` and the CLI recognise
+  UTF-16LE and UTF-16BE files without a byte-order mark from their byte
+  pattern, instead of decoding them as UTF-8 with interleaved NULs and
+  failing format detection.
+- **`LogSource.lineCount`** (#54) no longer counts a trailing newline as
+  an extra line; empty content has 0 lines.
+- **`compareRipLogs`** (#55) now reports a difference in a track's
+  `logFormat` at `tracks[N].logFormat`.
 - **Documentation** (#66): `--help` and the README now state that the
   default `--fail-on any` policy also exits 1 when any track is not
   AccurateRip-verified, including tracks not in the AccurateRip
   database. This was already the behaviour.
 - Fuzz tests (#21) mutate every `test/fixtures/*.log` file with random
-  slices, line deletions and bit flips.
+  slices, line deletions, bit flips and digit inflation.
 
 ## 0.2.0
 

@@ -1,9 +1,12 @@
 import 'models.dart';
 
-/// Returns `true` if every track in [log] was accurately ripped.
+/// Returns `true` if [log] has at least one track and every track was
+/// accurately ripped.
 ///
-/// An empty track list returns `true` (vacuously verified).
+/// A log with no tracks (unknown format, truncated, or not a rip log)
+/// returns `false`: nothing was verified.
 bool isFullyVerified(RipLog log) =>
+    log.tracks.isNotEmpty &&
     log.tracks.every((t) => t.accurateRipStatus == AccurateRipStatus.verified);
 
 /// Returns the subset of tracks in [log] that have any non-zero error counts.

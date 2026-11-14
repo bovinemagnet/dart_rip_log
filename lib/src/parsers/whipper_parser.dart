@@ -148,8 +148,17 @@ RipLog parseWhipper(String content) {
     // Numbered block headers inside TOC / Tracks.
     final mBlock = _reNumberedBlock.firstMatch(line);
     if (mBlock != null && indent == 2) {
-      final number = int.parse(mBlock.group(1)!);
+      final number = int.tryParse(mBlock.group(1)!);
       currentArVersion = null;
+      if (number == null) {
+        // Out-of-range block number: drop the block so its fields are
+        // not applied to the previous one.
+        currentToc = null;
+        currentTrack = null;
+        parsingErrors.add('Ignored whipper block with out-of-range '
+            'number: $line');
+        continue;
+      }
       if (section == 'TOC:') {
         currentToc = number;
         currentTrack = null;
@@ -164,14 +173,24 @@ RipLog parseWhipper(String content) {
     if (currentToc != null) {
       final mStart = _reStartSector.firstMatch(line);
       if (mStart != null) {
+        final start = int.tryParse(mStart.group(1)!);
+        if (start == null) {
+          parsingErrors.add('Ignored out-of-range whipper sector: $line');
+          continue;
+        }
         final prev = tocSectors[currentToc];
-        tocSectors[currentToc] = (int.parse(mStart.group(1)!), prev?.$2 ?? -1);
+        tocSectors[currentToc] = (start, prev?.$2 ?? -1);
         continue;
       }
       final mEnd = _reEndSector.firstMatch(line);
       if (mEnd != null) {
+        final end = int.tryParse(mEnd.group(1)!);
+        if (end == null) {
+          parsingErrors.add('Ignored out-of-range whipper sector: $line');
+          continue;
+        }
         final prev = tocSectors[currentToc];
-        tocSectors[currentToc] = (prev?.$1 ?? 0, int.parse(mEnd.group(1)!));
+        tocSectors[currentToc] = (prev?.$1 ?? 0, end);
         continue;
       }
       continue;

@@ -166,6 +166,7 @@ void _diffTrack(
   d('accurateRipCrcV2', a.accurateRipCrcV2, b.accurateRipCrcV2);
   d('accurateRipConfidence', a.accurateRipConfidence, b.accurateRipConfidence);
   d('copyOk', a.copyOk, b.copyOk);
+  d('logFormat', a.logFormat, b.logFormat);
   d('startSector', a.startSector, b.startSector);
   d('lengthSectors', a.lengthSectors, b.lengthSectors);
   d('durationSeconds', a.durationSeconds, b.durationSeconds);

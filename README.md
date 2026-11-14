@@ -176,8 +176,10 @@ The library never throws on malformed *content*. It may still throw at the
 file-I/O layer — for example, `parseRipLogFile` will throw a
 `FileSystemException` when the file does not exist or cannot be read. File
 input is decoded with BOM detection: UTF-16LE (the default encoding of real
-EAC logs), UTF-16BE, and UTF-8 with BOM are handled transparently, and
-BOM-less input falls back from UTF-8 to Latin-1 rather than throwing. A
+EAC logs), UTF-16BE, and UTF-8 with BOM are handled transparently. BOM-less
+UTF-16 (a log re-saved by an editor that strips the BOM) is recognised
+from its byte pattern, and other BOM-less input falls back from UTF-8 to
+Latin-1 rather than throwing. A
 deliberate consequence of the Latin-1 fallback is that every byte sequence
 decodes: a binary or otherwise non-log file no longer throws (as it did
 before 0.2.0) — it parses to an unknown-format `RipLog` with zero tracks,

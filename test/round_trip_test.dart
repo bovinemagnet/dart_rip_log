@@ -126,6 +126,21 @@ void main() {
       expect(diff.entries.first.right, 'BBBB');
     });
 
+    test('track logFormat change reported at tracks[N].logFormat (#55)', () {
+      const a = RipLog(
+        logFormat: RipLogFormat.eac,
+        tracks: [RipLogTrack(trackNumber: 1, logFormat: RipLogFormat.eac)],
+      );
+      const b = RipLog(
+        logFormat: RipLogFormat.eac,
+        tracks: [RipLogTrack(trackNumber: 1, logFormat: RipLogFormat.xld)],
+      );
+      final diff = compareRipLogs(a, b);
+      expect(diff.entries, hasLength(1));
+      expect(diff.entries.first.path, 'tracks[1].logFormat');
+      expect(diff.entries.first.kind, RipLogDiffKind.changed);
+    });
+
     test('track on only one side → trackAdded / trackRemoved', () {
       const a = RipLog(
           logFormat: RipLogFormat.eac, tracks: [RipLogTrack(trackNumber: 1)]);
